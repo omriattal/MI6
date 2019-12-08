@@ -29,7 +29,7 @@ public class Future<T> {
      * @return return the result of type T if it is available, if not wait until it is available.
      * <p>
      * @pre: none
-     * @post: isDone() = true
+     * @post: isDone()
      */
     public T get() {
         //TODO: implement this.
@@ -66,7 +66,9 @@ public class Future<T> {
      * wait for {@code timeout} TimeUnits {@code unit}. If time has
      * elapsed, return null.
      * <p>
-     * @pre: {@param timeout}
+     * @pre: {@param timeout >= 0} && {@param unit.instanceOf TimeUnit}
+     * @post: isDone() ? timeout not passed : timeout passed
+     * TODO: rewrite post condition.
      */
     public T get(long timeout, TimeUnit unit) {
         //TODO: implement this.

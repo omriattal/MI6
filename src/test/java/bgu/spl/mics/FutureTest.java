@@ -2,6 +2,9 @@ package bgu.spl.mics;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.concurrent.TimeUnit;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FutureTest {
@@ -23,5 +26,17 @@ public class FutureTest {
         Thread testT = new Thread(() -> future.resolve(true));
         testT.start();
         assertTrue(future.get());
+    }
+
+    @Test
+    public void testGetTimeout(){
+        Thread testT = new Thread(() -> future.resolve(true));
+        testT.start();
+        Boolean get = future.get(1000, TimeUnit.MILLISECONDS);
+        if(get != null){
+            assertTrue(future.isDone());
+        } else {
+            //TODO: implement a test that checks if the timeout was passed.
+        }
     }
 }
