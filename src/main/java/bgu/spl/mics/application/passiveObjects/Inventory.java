@@ -18,10 +18,12 @@ public class Inventory {
     /**
      * the singleton instance of the object
      */
-    private static Inventory instance = null;
+    private static Inventory instance;
 
     /**
      * Constructs a new Inventory
+     * <p>
+     * @pre:
      */
     private Inventory() {
         //TODO: Implement this
@@ -29,7 +31,7 @@ public class Inventory {
 
     /**
      * Retrieves the single instance of this class.
-     *
+     * <p>
      * @pre: none
      * @post: this.instance != null
      */
@@ -47,7 +49,6 @@ public class Inventory {
      *
      * @param inventory Data structure containing all data necessary for initialization
      *                  of the inventory.
-     *                  </p>
      * <p>
      * @pre: @param inventory != null, forall 0<=i<inventory() inventory[i] != null && inventory[i]!=""
      * @post: this.gadgets.size() == @param inventory.length &&
@@ -61,7 +62,6 @@ public class Inventory {
     /**
      * acquires a gadget and returns 'true' if it exists.
      * <p>
-     *
      * @param gadget Name of the gadget to check if available
      * @return ‘false’ if the gadget is missing, and ‘true’ otherwise
      * <p>
