@@ -21,8 +21,7 @@ public class Inventory {
         if (instance == null) {
             instance = new Inventory();
         }
-
-        return null;
+        return instance;
     }
 
     /**
@@ -38,6 +37,9 @@ public class Inventory {
      *
      * @param inventory Data structure containing all data necessary for initialization
      *                  of the inventory.
+     * <p>
+     * @pre: forall 0<=i<{@param inventory.length} inventory[i] != "" && inventory[i] != null
+     * @post: if pre conditions were met forall 0<=i<={@param inventory.length}
      */
     public void load(String[] inventory) {
         //TODO: Implement this
@@ -51,11 +53,11 @@ public class Inventory {
      * @return ‘false’ if the gadget is missing, and ‘true’ otherwise
      * <p>
      * @pre: @param gadget != null && @param gadget != ""
-     * @post:
+     * @post: @ret == gadgets.contains(gadget) && gadgets.remove(gadget) == false
      */
     public boolean getItem(String gadget) {
         //TODO: Implement this
-        return true;
+        return false;
     }
 
     /**
