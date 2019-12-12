@@ -35,8 +35,6 @@ public class FutureTest {
         Boolean get = future.get(1000, TimeUnit.MILLISECONDS);
         if(get != null){
             assertTrue(future.isDone());
-        } else {
-            //TODO: implement a test that checks if the timeout was passed.
         }
     }
 }
