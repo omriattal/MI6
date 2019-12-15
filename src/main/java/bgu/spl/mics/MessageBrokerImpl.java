@@ -1,7 +1,9 @@
 package bgu.spl.mics;
 
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -11,7 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  */
 public class MessageBrokerImpl implements MessageBroker {
     private ConcurrentHashMap<Subscriber, BlockingQueue<Message>> subscriberMap;
-    private ConcurrentHashMap<Class<? extends Message>, BlockingQueue<Subscriber>> topicMap;
+    private ConcurrentHashMap<Class<? extends Message>, ConcurrentLinkedQueue<Subscriber>> topicMap;
     private ConcurrentHashMap<Event, Future> eventMap;
 
     private MessageBrokerImpl() {
@@ -39,13 +41,10 @@ public class MessageBrokerImpl implements MessageBroker {
 
     private void subscribeTopic(Class<? extends Message> type, Subscriber m) {
         if (!topicMap.contains(type)) {
-            topicMap.put(type, new LinkedBlockingQueue<>());
+            topicMap.put(type, new ConcurrentLinkedQueue<>());
         }
-        BlockingQueue<Subscriber> topicQueue = topicMap.get(type);
-        try {
-            topicQueue.put(m);
-        } catch (InterruptedException ignored) {
-        }
+        ConcurrentLinkedQueue<Subscriber> topicQueue = topicMap.get(type);
+        topicQueue.add(m);
     }
 
     @Override
@@ -60,7 +59,7 @@ public class MessageBrokerImpl implements MessageBroker {
             System.out.println("No subscriber is registered to this topic.");
             return;
         }
-        BlockingQueue<Subscriber> topicQueue = topicMap.get(b.getClass());
+        ConcurrentLinkedQueue<Subscriber> topicQueue = topicMap.get(b.getClass());
         for (Subscriber subscriber : topicQueue) {
             addMessageToSubQueue(b, subscriber);
         }
@@ -83,13 +82,13 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     private <T> void assignEventAndRequeueSubscriber(Event<T> e) {
-        BlockingQueue<Subscriber> subQueue = topicMap.get(e.getClass());
+        ConcurrentLinkedQueue<Subscriber> subQueue = topicMap.get(e.getClass());
 
         try {
-            Subscriber first = subQueue.take();
+            Subscriber first = subQueue.poll();
             BlockingQueue<Message> messageQueue = subscriberMap.get(first);
             messageQueue.put(e);
-            subQueue.put(first);
+            subQueue.add(first);
         } catch (InterruptedException ignored) {
         }
     }
@@ -101,13 +100,20 @@ public class MessageBrokerImpl implements MessageBroker {
 
     @Override
     public void unregister(Subscriber m) {
+        if (subscriberMap.remove(m) != null) removeFromTopicMap(m);
+    }
 
+    private void removeFromTopicMap(Subscriber m) {
+        for (Map.Entry<Class<? extends Message>, ConcurrentLinkedQueue<Subscriber>> entry : topicMap.entrySet()) {
+            ConcurrentLinkedQueue<Subscriber> currentQueue = entry.getValue();
+            currentQueue.remove(m);
+        }
     }
 
     @Override
     public Message awaitMessage(Subscriber m) throws InterruptedException {
-        // TODO Auto-generated method stub
-        return null;
+        BlockingQueue<Message> messageQueue = subscriberMap.get(m);
+        return messageQueue.take();
     }
 
     public static class Instance {
