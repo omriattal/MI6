@@ -1,7 +1,6 @@
-package bgu.spl.mics;
+    package bgu.spl.mics;
 
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * A Future object represents a promised result - an object that will
@@ -18,7 +17,7 @@ public class Future<T> {
      * This should be the the only public constructor in this class.
      */
     public Future() {
-        //TODO: implement this
+        result = null;
     }
 
     /**
@@ -33,9 +32,9 @@ public class Future<T> {
      * @post: isDone()
      */
     public synchronized T get() {
-        try{
-            while(!isDone()) wait();
-        } catch (InterruptedException ignored){}
+        try {
+            while (!isDone()) wait();
+        } catch (InterruptedException ignored) {}
         return result;
     }
 
@@ -46,7 +45,7 @@ public class Future<T> {
      * @pre: result != null
      * @post: isDone() = true
      */
-    public void resolve(T result) {
+    public synchronized void resolve(T result) {
         this.result = result;
         notifyAll();
     }
@@ -54,7 +53,7 @@ public class Future<T> {
     /**
      * @return true if this object has been resolved, false otherwise
      */
-    public boolean isDone() {
+    public synchronized boolean isDone() {
         return result != null;
     }
 
@@ -74,9 +73,18 @@ public class Future<T> {
      * @post: isDone() ? timeout not passed : timeout passed
      * TODO: rewrite post condition.
      */
-    public T get(long timeout, TimeUnit unit) {
-        return get();
-        //TODO: add some timeout here
+    //TODO: fix issue with timout
+    public synchronized T get(long timeout, TimeUnit unit) {
+        try {
+            while (!timedOut() && !isDone()) wait(unit.toMillis(timeout));
+        } catch (InterruptedException ignored) {
+        }
+        return result;
+    }
+
+    private boolean timedOut() {
+        //TODO: Implement timedOut
+        return false;
     }
 
 }
