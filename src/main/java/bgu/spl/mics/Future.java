@@ -1,6 +1,7 @@
 package bgu.spl.mics;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * A Future object represents a promised result - an object that will
@@ -31,9 +32,11 @@ public class Future<T> {
      * @pre: none
      * @post: isDone()
      */
-    public T get() {
-        //TODO: implement this.
-        return null;
+    public synchronized T get() {
+        try{
+            while(!isDone()) wait();
+        } catch (InterruptedException ignored){}
+        return result;
     }
 
     /**
@@ -45,6 +48,7 @@ public class Future<T> {
      */
     public void resolve(T result) {
         this.result = result;
+        notifyAll();
     }
 
     /**
@@ -71,8 +75,8 @@ public class Future<T> {
      * TODO: rewrite post condition.
      */
     public T get(long timeout, TimeUnit unit) {
-        //TODO: implement this.
-        return null;
+        return get();
+        //TODO: add some timeout here
     }
 
 }
