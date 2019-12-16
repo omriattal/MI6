@@ -46,7 +46,7 @@ public interface MessageBroker {
      * <p>
      * @param b 	The message to added to the queues.
      */
-    void sendBroadcast(Broadcast b);
+    void sendBroadcast(Broadcast b) throws InterruptedException;
 
     /**
      * Adds the {@link Event} {@code e} to the message queue of one of the
@@ -58,7 +58,7 @@ public interface MessageBroker {
      * @return {@link Future<T>} object to be resolved once the processing is complete,
      * 	       null in case no Subscriber has subscribed to {@code e.getClass()}.
      */
-    <T> Future<T> sendEvent(Event<T> e);
+    <T> Future<T> sendEvent(Event<T> e) throws InterruptedException;
 
     /**
      * Allocates a message-queue for the {@link Subscriber} {@code m}.
@@ -75,7 +75,7 @@ public interface MessageBroker {
      * <p>
      * @param s the Subscriber to unregister.
      */
-    void unregister(Subscriber s);
+    void unregister(Subscriber s) throws InterruptedException;
 
     /**
      * Using this method, a <b>registered</b> Subscriber can take message
