@@ -80,7 +80,6 @@ public class MessageBrokerImpl implements MessageBroker {
         topicMapLock.acquire();
         try {
             if (!topicMap.contains(b.getClass())) {
-                System.out.println("No subscriber is registered to this topic.");
                 return;
             }
         } finally {
@@ -136,7 +135,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
         subSemaphore.acquire();
         try {
-            subPair.getValue().put(b);
+            getSubQueue(subscriber).put(b);
         } finally {
             subSemaphore.release();
         }

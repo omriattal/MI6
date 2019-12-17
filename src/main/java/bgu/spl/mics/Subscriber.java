@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * The Subscriber is an abstract class that any subscriber in the system
  * must extend. The abstract Subscriber class is responsible to get and
@@ -7,16 +9,18 @@ package bgu.spl.mics;
  * <p>
  * Derived classes of Subscriber should never directly touch the MessageBroker.
  * the derived class also supplies a {@link Callback} that should be called when
- * a message of the subscribed type was taken from the Subscriber
+ * a message of the subscribedtype was taken from the Subscriber
  * message-queue (see {@link MessageBroker#register(Subscriber)}
  * method). The abstract Subscriber stores this callback together with the
  * type of the message is related to.
- * 
+ * <p>
  * Only private fields and methods may be added to this class.
  * <p>
  */
 public abstract class Subscriber extends RunnableSubPub {
     private boolean terminated = false;
+    private MessageBroker messageBroker = MessageBrokerImpl.getInstance();
+    private ConcurrentHashMap<Class<? extends Message>, Callback> callbackMap;
 
     /**
      * @param name the Subscriber name (used mainly for debugging purposes -
@@ -24,6 +28,7 @@ public abstract class Subscriber extends RunnableSubPub {
      */
     public Subscriber(String name) {
         super(name);
+        callbackMap = new ConcurrentHashMap<>();
     }
 
     /**
@@ -39,6 +44,7 @@ public abstract class Subscriber extends RunnableSubPub {
      * {@link Callback#call(java.lang.Object)} by calling
      * {@code callback.call(m)}.
      * <p>
+     *
      * @param <E>      The type of event to subscribe to.
      * @param <T>      The type of result expected for the subscribed event.
      * @param type     The {@link Class} representing the type of event to
@@ -48,7 +54,11 @@ public abstract class Subscriber extends RunnableSubPub {
      *                 queue.
      */
     protected final <T, E extends Event<T>> void subscribeEvent(Class<E> type, Callback<E> callback) {
-        //TODO: implement this.
+        try {
+            messageBroker.subscribeEvent(type, this);
+            callbackMap.putIfAbsent(type, callback);
+        } catch (InterruptedException ignored) {
+        }
     }
 
     /**
@@ -64,6 +74,7 @@ public abstract class Subscriber extends RunnableSubPub {
      * {@link Callback#call(java.lang.Object)} by calling
      * {@code callback.call(m)}.
      * <p>
+     *
      * @param <B>      The type of broadcast message to subscribe to
      * @param type     The {@link Class} representing the type of broadcast
      *                 message to subscribe to.
@@ -72,13 +83,18 @@ public abstract class Subscriber extends RunnableSubPub {
      *                 queue.
      */
     protected final <B extends Broadcast> void subscribeBroadcast(Class<B> type, Callback<B> callback) {
-        //TODO: implement this.
+        try {
+            messageBroker.subscribeBroadcast(type, this);
+            callbackMap.putIfAbsent(type, callback);
+        } catch (InterruptedException ignored) {
+        }
     }
 
     /**
      * Completes the received request {@code e} with the result {@code result}
      * using the MessageBroker.
      * <p>
+     *
      * @param <T>    The type of the expected result of the processed event
      *               {@code e}.
      * @param e      The event to complete.
@@ -86,7 +102,7 @@ public abstract class Subscriber extends RunnableSubPub {
      *               {@code e}.
      */
     protected final <T> void complete(Event<T> e, T result) {
-        //TODO: implement this.
+        messageBroker.complete(e, result);
     }
 
     /**
@@ -105,7 +121,12 @@ public abstract class Subscriber extends RunnableSubPub {
     public final void run() {
         initialize();
         while (!terminated) {
-            System.out.println("NOT IMPLEMENTED!!!"); //TODO: you should delete this line :)
+            try {
+                Message message = messageBroker.awaitMessage(this);
+                Callback callback = callbackMap.get(message.getClass());
+                callback.call(message);
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 
