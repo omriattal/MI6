@@ -14,12 +14,13 @@ public class MessageBrokerImpl implements MessageBroker {
     private ConcurrentHashMap<Subscriber, Pair<Semaphore, BlockingQueue<Message>>> subscriberMap;
     private ConcurrentHashMap<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> topicMap;
     private ConcurrentHashMap<Event, Future> eventMap;
-    private Semaphore eventMapLock;
+    private Semaphore topicMapLock;
 
     private MessageBrokerImpl() {
         subscriberMap = new ConcurrentHashMap<>();
         topicMap = new ConcurrentHashMap<>();
         eventMap = new ConcurrentHashMap<>();
+        topicMapLock = new Semaphore(1);
     }
 
     /**
@@ -30,90 +31,109 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     @Override
-    public <T> void subscribeEvent(Class<? extends Event<T>> type, Subscriber m) {
-        try {
-            subscribeTopic(type, m);
-        } catch (InterruptedException ignored) {
-        }
+    public <T> void subscribeEvent(Class<? extends Event<T>> type, Subscriber m) throws InterruptedException {
+        subscribeTopic(type, m);
     }
 
     @Override
-    public void subscribeBroadcast(Class<? extends Broadcast> type, Subscriber m) {
-        try {
-            subscribeTopic(type, m);
-        } catch (InterruptedException ignored) {
-        }
+    public void subscribeBroadcast(Class<? extends Broadcast> type, Subscriber m) throws InterruptedException {
+        subscribeTopic(type, m);
     }
 
     private void subscribeTopic(Class<? extends Message> type, Subscriber m) throws InterruptedException {
-        if (!topicMap.contains(type)) {
-            Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> newTopicPair = new Pair<>(new Semaphore(1), new ConcurrentLinkedQueue<>());
-            topicMap.put(type, newTopicPair);
-        }
-
-        Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(type);
-        topicPair.getKey().acquire();
+        topicMapLock.acquire();
         try {
-            topicPair.getValue().add(m);
+            if (!topicMap.contains(type)) {
+                Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> newTopicPair = new Pair<>(new Semaphore(1), new ConcurrentLinkedQueue<>());
+                topicMap.put(type, newTopicPair);
+            }
+            getTopicQueueLock(type).acquire();
         } finally {
-            topicPair.getKey().release();
+            topicMapLock.release();
         }
+        try {
+            getTopicQueue(type).add(m);
+        } finally {
+            getTopicQueueLock(type).release();
+        }
+    }
+
+    private ConcurrentLinkedQueue<Subscriber> getTopicQueue(Class<? extends Message> topic) {
+        Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(topic);
+        return topicPair.getValue();
+    }
+
+    private Semaphore getTopicQueueLock(Class<? extends Message> topic) {
+        Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(topic);
+        return topicPair.getKey();
     }
 
     @Override
     public <T> void complete(Event<T> e, T result) {
         Future<T> toResolve = eventMap.get(e);
         toResolve.resolve(result);
+        eventMap.remove(e);
     }
 
     @Override
     public void sendBroadcast(Broadcast b) throws InterruptedException {
-        if (!topicMap.contains(b.getClass())) {
-            System.out.println("No subscriber is registered to this topic.");
-            return;
+        topicMapLock.acquire();
+        try {
+            if (!topicMap.contains(b.getClass())) {
+                System.out.println("No subscriber is registered to this topic.");
+                return;
+            }
+        } finally {
+            topicMapLock.release();
         }
 
-        Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(b.getClass());
-        Semaphore topicSemaphore = topicPair.getKey();
-        topicSemaphore.acquire();
+        getTopicQueueLock(b.getClass()).acquire();
         try {
-            for (Subscriber subscriber : topicPair.getValue()) {
+            for (Subscriber subscriber : getTopicQueue(b.getClass())) {
                 addToSubQueue(b, subscriber);
             }
         } finally {
-            topicSemaphore.release();
+            getTopicQueueLock(b.getClass()).release();
         }
     }
 
     @Override
     public <T> Future<T> sendEvent(Event<T> e) throws InterruptedException {
-        if(!eventMap.contains(e)){
-            return null;
+        topicMapLock.acquire();
+        try {
+            if (!topicMap.contains(e.getClass())) return null;
+        } finally {
+            topicMapLock.release();
         }
-        assignEventAndRequeueSubscriber(e);
-        Future<T> future = new Future<>();
-        eventMap.put(e, future);
-        return future;
+
+        getTopicQueueLock(e.getClass()).acquire();
+        try {
+            if (getTopicQueue(e.getClass()).isEmpty()) {
+                return null;
+            }
+
+            Future<T> future = new Future<>();
+            eventMap.put(e, future);
+
+            assignEventAndRequeueSubscriber(e);
+
+            return future;
+        } finally {
+            getTopicQueueLock(e.getClass()).release();
+        }
     }
 
     private <T> void assignEventAndRequeueSubscriber(Event<T> e) throws InterruptedException {
-        Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(e.getClass());
-        Semaphore topicSemaphore = topicPair.getKey();
+        Subscriber first = getTopicQueue(e.getClass()).poll();
+        getTopicQueue(e.getClass()).add(first);
 
-        topicSemaphore.acquire();
-        try {
-            Subscriber first = topicPair.getValue().poll();
-            topicPair.getValue().add(first);
-
-            addToSubQueue(e, first);
-        } finally {
-            topicSemaphore.release();
-        }
+        addToSubQueue(e, first);
     }
 
     private void addToSubQueue(Message b, Subscriber subscriber) throws InterruptedException {
         Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(subscriber);
         Semaphore subSemaphore = subPair.getKey();
+
         subSemaphore.acquire();
         try {
             subPair.getValue().put(b);
@@ -124,43 +144,53 @@ public class MessageBrokerImpl implements MessageBroker {
 
     @Override
     public void register(Subscriber m) {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = new Pair<>(new Semaphore(1) , new LinkedBlockingQueue<>());
-        subscriberMap.put(m, subPair);
+        Pair<Semaphore, BlockingQueue<Message>> subPair = new Pair<>(new Semaphore(1), new LinkedBlockingQueue<>());
+        subscriberMap.putIfAbsent(m, subPair);
     }
 
     @Override
     public void unregister(Subscriber m) throws InterruptedException {
-        if (subscriberMap.remove(m) != null) removeFromTopicMap(m);
+        topicMapLock.acquire();
+        try {
+            if (subscriberMap.contains(m)){
+                removeFromTopicMap(m);
+                subscriberMap.remove(m);
+            }
+        } finally {
+            topicMapLock.release();
+        }
     }
 
     private void removeFromTopicMap(Subscriber m) throws InterruptedException {
         for (Map.Entry<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> entry : topicMap.entrySet()) {
             Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = entry.getValue();
-            Semaphore topicSemaphore = topicPair.getKey();
-
-            topicSemaphore.acquire();
-            try {
-                topicPair.getValue().remove(m);
-            } finally {
-                topicSemaphore.release();
-            }
+            topicPair.getValue().remove(m);
         }
     }
 
     @Override
     public Message awaitMessage(Subscriber m) throws InterruptedException {
-        Pair<Semaphore ,BlockingQueue<Message>> subPair = subscriberMap.get(m);
+        if (!subscriberMap.contains(m)) {
+            throw new IllegalStateException("No such Subscriber registered: " + m.getName());
+        }
+
+        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
         Semaphore subSemaphore = subPair.getKey();
 
         subSemaphore.acquire();
-        try{
-            return subPair.getValue().take();
+        try {
+            return getSubQueue(m).take();
         } finally {
             subSemaphore.release();
         }
     }
 
-    public static class Instance {
+    private BlockingQueue<Message> getSubQueue(Subscriber m) {
+        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
+        return subPair.getValue();
+    }
+
+    private static class Instance {
         private static MessageBroker instance = new MessageBrokerImpl();
     }
 }

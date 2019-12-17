@@ -18,7 +18,7 @@ public interface MessageBroker {
      * @param type The type to subscribe to,
      * @param s    The subscribing Subscriber.
      */
-    <T> void subscribeEvent(Class<? extends Event<T>> type, Subscriber s);
+    <T> void subscribeEvent(Class<? extends Event<T>> type, Subscriber s) throws InterruptedException;
 
     /**
      * Subscribes {@code m} to receive {@link Broadcast}s of type {@code type}.
@@ -26,7 +26,7 @@ public interface MessageBroker {
      * @param type 	The type to subscribe to.
      * @param s    	The Subscriber.
      */
-    void subscribeBroadcast(Class<? extends Broadcast> type, Subscriber s);
+    void subscribeBroadcast(Class<? extends Broadcast> type, Subscriber s) throws InterruptedException;
 
     /**
      * Notifies the MessageBroker that the event {@code e} is completed and its
