@@ -8,7 +8,7 @@ import java.util.List;
  * <p>
  * You may add ONLY private fields and methods to this class.
  */
-public class MissionInfo {
+public class  MissionInfo {
 
     /**
      * Sets the name of the mission.

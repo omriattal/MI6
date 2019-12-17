@@ -1,4 +1,5 @@
 package bgu.spl.mics.application.passiveObjects;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,10 +9,11 @@ import java.util.Map;
  * <p>
  * You may add ONLY private fields and methods to this class.
  */
-public class Squad {
+public class  Squad {
 
 	private Map<String, Agent> agents;
-
+	private Squad() {
+	}
 	/**
 	 * Retrieves the single instance of this class.
 	 */

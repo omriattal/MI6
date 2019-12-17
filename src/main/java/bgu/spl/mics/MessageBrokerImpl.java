@@ -151,7 +151,7 @@ public class MessageBrokerImpl implements MessageBroker {
     public void unregister(Subscriber m) throws InterruptedException {
         topicMapLock.acquire();
         try {
-            if (subscriberMap.contains(m)){
+            if (subscriberMap.contains(m)) {
                 removeFromTopicMap(m);
                 subscriberMap.remove(m);
             }
