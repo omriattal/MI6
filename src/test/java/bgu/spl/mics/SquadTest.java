@@ -52,7 +52,11 @@ public class SquadTest {
         }
         List<String> agentList2 = new ArrayList<>();
         agentList2.add(agent3.getName());
-        squad.sendAgents(agentList1, 1000);
+        try {
+            squad.sendAgents(agentList1, 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         assertFalse(squad.getAgents(agentList1));
         assertTrue(squad.getAgents(agentList2));
     }

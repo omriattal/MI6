@@ -20,7 +20,7 @@ public class MessageBrokerImpl implements MessageBroker {
         subscriberMap = new ConcurrentHashMap<>();
         topicMap = new ConcurrentHashMap<>();
         eventMap = new ConcurrentHashMap<>();
-        topicMapLock = new Semaphore(1);
+        topicMapLock = new Semaphore(1, true);
     }
 
     /**
@@ -43,8 +43,8 @@ public class MessageBrokerImpl implements MessageBroker {
     private void subscribeTopic(Class<? extends Message> type, Subscriber m) throws InterruptedException {
         topicMapLock.acquire();
         try {
-            if (!topicMap.contains(type)) {
-                Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> newTopicPair = new Pair<>(new Semaphore(1), new ConcurrentLinkedQueue<>());
+            if (!topicMap.containsKey(type)) {
+                Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> newTopicPair = new Pair<>(new Semaphore(1, true), new ConcurrentLinkedQueue<>());
                 topicMap.put(type, newTopicPair);
             }
             getTopicQueueLock(type).acquire();
@@ -79,7 +79,7 @@ public class MessageBrokerImpl implements MessageBroker {
     public void sendBroadcast(Broadcast b) throws InterruptedException {
         topicMapLock.acquire();
         try {
-            if (!topicMap.contains(b.getClass())) {
+            if (!topicMap.containsKey(b.getClass())) {
                 return;
             }
         } finally {
@@ -100,7 +100,7 @@ public class MessageBrokerImpl implements MessageBroker {
     public <T> Future<T> sendEvent(Event<T> e) throws InterruptedException {
         topicMapLock.acquire();
         try {
-            if (!topicMap.contains(e.getClass())) return null;
+            if (!topicMap.containsKey(e.getClass())) return null;
         } finally {
             topicMapLock.release();
         }
@@ -143,7 +143,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
     @Override
     public void register(Subscriber m) {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = new Pair<>(new Semaphore(1), new LinkedBlockingQueue<>());
+        Pair<Semaphore, BlockingQueue<Message>> subPair = new Pair<>(new Semaphore(1, true), new LinkedBlockingQueue<>());
         subscriberMap.putIfAbsent(m, subPair);
     }
 
@@ -151,7 +151,7 @@ public class MessageBrokerImpl implements MessageBroker {
     public void unregister(Subscriber m) throws InterruptedException {
         topicMapLock.acquire();
         try {
-            if (subscriberMap.contains(m)) {
+            if (subscriberMap.containsKey(m)) {
                 removeFromTopicMap(m);
                 subscriberMap.remove(m);
             }
@@ -160,7 +160,7 @@ public class MessageBrokerImpl implements MessageBroker {
         }
     }
 
-    private void removeFromTopicMap(Subscriber m) throws InterruptedException {
+    private void removeFromTopicMap(Subscriber m) {
         for (Map.Entry<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> entry : topicMap.entrySet()) {
             Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = entry.getValue();
             topicPair.getValue().remove(m);
@@ -169,7 +169,9 @@ public class MessageBrokerImpl implements MessageBroker {
 
     @Override
     public Message awaitMessage(Subscriber m) throws InterruptedException {
-        if (!subscriberMap.contains(m)) {
+        if (!subscriberMap.containsKey(m)) {
+            System.out.println(m.toString());
+            System.out.println(subscriberMap.toString());
             throw new IllegalStateException("No such Subscriber registered: " + m.getName());
         }
 

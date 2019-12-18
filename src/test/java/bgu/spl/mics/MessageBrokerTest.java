@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MessageBrokerTest {
-    MessageBroker mb;
+    private MessageBroker mb;
 
     @BeforeEach
     public void setUp() {
@@ -21,9 +21,13 @@ public class MessageBrokerTest {
         Event<Boolean> booleanEvent = new BoolEvent();
         Subscriber subscriber = new M();
 
-        mb.subscribeEvent(IntEvent.class, subscriber);
-        mb.sendEvent(integerEvent);
-        mb.sendEvent(booleanEvent);
+        try {
+            mb.subscribeEvent(IntEvent.class, subscriber);
+            mb.sendEvent(integerEvent);
+            mb.sendEvent(booleanEvent);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         try {
             assertEquals(IntEvent.class, mb.awaitMessage(subscriber).getClass());
@@ -35,17 +39,26 @@ public class MessageBrokerTest {
     @Test
     public void testComplete() {
         Event<Integer> integerEvent = new IntEvent();
-        Future<Integer> integerFuture = mb.sendEvent(integerEvent);
+        Future<Integer> integerFuture = null;
+        try {
+            integerFuture = mb.sendEvent(integerEvent);
+            mb.complete(integerEvent, 42);
 
-        mb.complete(integerEvent, 42);
-
-        assertTrue(integerFuture.isDone());
+            assertTrue(integerFuture.isDone());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
     @Test
     public void testSendEvent() {
         Event<Integer> integerEvent = new IntEvent();
-        Future<Integer> future = mb.sendEvent(integerEvent);
-        assertEquals(42,future.get());
+        Future<Integer> future = null;
+        try {
+            future = mb.sendEvent(integerEvent);
+            assertEquals(42,future.get());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
