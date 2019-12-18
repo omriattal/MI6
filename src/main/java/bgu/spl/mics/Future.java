@@ -19,6 +19,7 @@ public class Future<T> {
      */
     public Future() {
         result = null;
+        isDone = false;
     }
 
     /**
