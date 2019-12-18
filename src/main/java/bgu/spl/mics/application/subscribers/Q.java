@@ -19,7 +19,7 @@ public class Q extends Subscriber {
 
 	@Override
 	protected void initialize() {
-		MessageBrokerImpl.getInstance().register(this); //registers Q to the messagebroker
+		MessageBrokerImpl.getInstance().register(this); //registers Q in the MessageBroker
 		subscribeEvent(GadgetAvailableEvent.class, (event) -> {
 		boolean result = Inventory.getInstance().getItem(event.getGadget()); //checks availability of the gadget.
 		complete(event,result);
