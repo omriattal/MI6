@@ -2,5 +2,5 @@ package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
 
-public class SendAgentsEvent implements Event<Boolean> {
+public class SendAgentsEvent implements Event<Void> {
 }
