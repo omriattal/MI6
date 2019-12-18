@@ -1,5 +1,6 @@
 package bgu.spl.mics;
 
+
 import javafx.util.Pair;
 
 import java.util.Map;
@@ -153,10 +154,19 @@ public class MessageBrokerImpl implements MessageBroker {
         try {
             if (subscriberMap.containsKey(m)) {
                 removeFromTopicMap(m);
+                completeAllEventsOfSubscriberAsNull(m);
                 subscriberMap.remove(m);
             }
         } finally {
             topicMapLock.release();
+        }
+    }
+
+    private void completeAllEventsOfSubscriberAsNull(Subscriber m) {
+        for(Message message: getSubQueue(m)){
+            if(message instanceof Event){
+                complete((Event) message, null);
+            }
         }
     }
 
