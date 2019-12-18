@@ -16,6 +16,13 @@ public class Inventory {
     private List<String> gadgets;
 
     /**
+     * The constructor of Inventory. It is private as it is a singleton.
+     */
+    private Inventory() {
+        gadgets = new ArrayList<>();
+    }
+
+    /**
      * Retrieves the single instance of this class.
      */
     public static Inventory getInstance() {
@@ -26,26 +33,19 @@ public class Inventory {
     }
 
     /**
-     * The constructor of Inventory. It is private as it is a singleton.
-     */
-    private Inventory(){
-        gadgets = new ArrayList<>();
-    }
-
-    /**
      * Initializes the inventory. This method adds all the items given to the gadget
      * inventory.
      * <p>
      *
      * @param inventory Data structure containing all data necessary for initialization
      *                  of the inventory.
-     * <p>
+     *                  <p>
      * @pre: forall 0<=i<{@param inventory.length} inventory[i] != "" && inventory[i] != null
      * @post: if pre conditions were met forall 0<=i<={@param inventory.length}
      */
     public void load(String[] inventory) {
-        for (String gadget: inventory) {
-            if(gadget==null || gadget=="") {
+        for (String gadget : inventory) {
+            if (gadget == null || gadget == "") {
                 gadgets.clear();
                 return;
             }
