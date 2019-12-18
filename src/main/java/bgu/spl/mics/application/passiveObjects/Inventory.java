@@ -1,5 +1,6 @@
 package bgu.spl.mics.application.passiveObjects;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -28,6 +29,7 @@ public class Inventory {
      * The constructor of Inventory. It is private as it is a singleton.
      */
     private Inventory(){
+        gadgets = new ArrayList<>();
     }
 
     /**
@@ -42,7 +44,13 @@ public class Inventory {
      * @post: if pre conditions were met forall 0<=i<={@param inventory.length}
      */
     public void load(String[] inventory) {
-        //TODO: Implement this
+        for (String gadget: inventory) {
+            if(gadget==null || gadget=="") {
+                gadgets.clear();
+                return;
+            }
+            gadgets.add(gadget);
+        }
     }
 
     /**
@@ -56,8 +64,7 @@ public class Inventory {
      * @post: @ret == gadgets.contains(gadget) && gadgets.remove(gadget) == false
      */
     public boolean getItem(String gadget) {
-        //TODO: Implement this
-        return false;
+        return gadgets.remove(gadget);
     }
 
     /**
