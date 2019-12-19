@@ -63,7 +63,7 @@ public class Squad {
     public void sendAgents(List<String> serials, int time) {
         try {
             Thread.sleep(time * 100);
-        }  catch (InterruptedException ignored) {
+        } catch (InterruptedException ignored) {
         }
         releaseAgents(serials);
     }

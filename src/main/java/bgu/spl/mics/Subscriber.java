@@ -2,6 +2,8 @@ package bgu.spl.mics;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Thread.interrupted;
+
 /**
  * The Subscriber is an abstract class that any subscriber in the system
  * must extend. The abstract Subscriber class is responsible to get and
@@ -120,13 +122,16 @@ public abstract class Subscriber extends RunnableSubPub {
     @Override
     public final void run() {
         initialize();
-        while (!terminated) {
-            try {
+        try {
+            while (!interrupted() & !terminated) {
                 Message message = messageBroker.awaitMessage(this);
                 Callback callback = callbackMap.get(message.getClass());
                 callback.call(message);
-            } catch (InterruptedException ignored) {
+
             }
+            MessageBrokerImpl.getInstance().unregister(this);
+        } catch (InterruptedException ignored){
+
         }
     }
 
