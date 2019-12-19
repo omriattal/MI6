@@ -26,11 +26,13 @@ public class Moneypenny extends Subscriber {
         super("Moneypenny");
         this.serialNumber = serialNumber;
         squad = Squad.getInstance();
+        currentTick = 0;
     }
 
     @Override
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this);
+        subscribeToTimeTick();
         if (serialNumber % 2 == 0) {
             subscribeToAgentsAvailableEvent();
         }

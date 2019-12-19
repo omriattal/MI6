@@ -18,6 +18,7 @@ public class Intelligence extends Subscriber {
 	public Intelligence(int serialNumber) {
 		super("Change_This_Name");
 		this.serialNumber = serialNumber;
+		currentTick = 0;
 		// TODO Implement this
 	}
 
