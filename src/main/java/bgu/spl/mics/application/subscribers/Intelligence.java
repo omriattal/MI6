@@ -4,7 +4,7 @@ import bgu.spl.mics.Publisher;
 import bgu.spl.mics.Subscriber;
 
 /**
- * A Publisher only.
+ * Subscriber/Publisher
  * Holds a list of Info objects and sends them
  *
  * You can add private fields and public methods to this class.

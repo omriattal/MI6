@@ -60,8 +60,11 @@ public class Squad {
      *
      * @param time time ticks to sleep
      */
-    public void sendAgents(List<String> serials, int time) throws InterruptedException {
-        Thread.sleep(time * 100);
+    public void sendAgents(List<String> serials, int time) {
+        try {
+            Thread.sleep(time * 100);
+        }  catch (InterruptedException ignored) {
+        }
         releaseAgents(serials);
     }
 

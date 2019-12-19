@@ -1,12 +1,11 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.Future;
-import bgu.spl.mics.MessageBrokerImpl;
-import bgu.spl.mics.SimplePublisher;
-import bgu.spl.mics.Subscriber;
+import bgu.spl.mics.*;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
+
+import java.util.List;
 
 /**
  * M handles MissionAvailableEvent - fills a report and sends agents to mission.
@@ -16,7 +15,7 @@ import bgu.spl.mics.application.passiveObjects.MissionInfo;
  */
 public class M extends Subscriber {
 	Diary diary = Diary.getInstance();
-
+//TODO: Refactor and update diary.
 	public M() {
 		super("M");
 	}
@@ -28,23 +27,35 @@ public class M extends Subscriber {
 		subscribeEvent(MissionReceivedEvent.class, (event) ->{
 			MissionInfo missionInfo = event.getMissionInfo();
 			SimplePublisher publish = getSimplePublisher();
+			List<String> serials = missionInfo.getSerialAgentsNumbers();
+			int missionDuration = missionInfo.getDuration();
 
-			Future<Boolean> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(missionInfo.getSerialAgentsNumbers()));
+			Future<Boolean> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
 			if(agentsAvailableFuture == null || !agentsAvailableFuture.get()){
-				//TODO: implement mission failed because there is no subscriber, or agents don't exist
+				complete(event,false);
 				return;
 			}
 			Future<Boolean> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
 			if(gadgetAvailableFuture == null || !gadgetAvailableFuture.get()){
-				//TODO: implement mission failed because there is no subscriber, or gadget doesn't exist
-				publish.sendEvent(new ReleaseAgentsEvent());
+				publish.sendEvent(new ReleaseAgentsEvent(serials));
+				complete(event,false);
 				return;
 			}
+
 			if(timePassed()){
-				//TODO: implement mission failed because there is no subscriber, or gadget doesn't exist
+				publish.sendEvent(new ReleaseAgentsEvent(serials));
+				complete(event,false);
 				return;
 			}
-			publish.sendEvent(new SendAgentsEvent());
+
+			Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials,missionDuration));
+			if(agentsSentFuture==null) {
+				publish.sendEvent(new ReleaseAgentsEvent(serials));
+				complete(event,false);
+				return;
+
+			}
+			complete(event,true);
 		});
 		
 	}

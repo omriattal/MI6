@@ -13,13 +13,24 @@ import bgu.spl.mics.application.passiveObjects.Inventory;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Q extends Subscriber {
-	public Q() {
+	private static Q instance = null;
+	private Q() {
 		super("Q");
+	}
+
+	public static Q getInstance() {
+		if(instance ==null)
+			instance = new Q();
+		return  instance;
 	}
 
 	@Override
 	protected void initialize() {
 		MessageBrokerImpl.getInstance().register(this); //registers Q to the messagebroker
+		subscribeToGadgetAvailableEvent();
+	}
+
+	private void subscribeToGadgetAvailableEvent() {
 		subscribeEvent(GadgetAvailableEvent.class, (event) -> {
 		boolean result = Inventory.getInstance().getItem(event.getGadget()); //checks availability of the gadget.
 		complete(event,result);

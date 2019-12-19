@@ -14,9 +14,12 @@ public class Diary {
 	/**
 	 * Retrieves the single instance of this class.
 	 */
+	private static Diary instance = null;
 	public static Diary getInstance() {
-		//TODO: Implement this
-		return null;
+		if(instance==null) {
+			instance = new Diary();
+		}
+		return instance;
 	}
 
 	public List<Report> getReports() {
