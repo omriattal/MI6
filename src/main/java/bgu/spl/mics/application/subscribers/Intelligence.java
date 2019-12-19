@@ -11,9 +11,10 @@ import bgu.spl.mics.Subscriber;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Intelligence extends Subscriber {
-
-	public Intelligence() {
+	int serialNumber;
+	public Intelligence(int serialNumber) {
 		super("Change_This_Name");
+		this.serialNumber = serialNumber;
 		// TODO Implement this
 	}
 

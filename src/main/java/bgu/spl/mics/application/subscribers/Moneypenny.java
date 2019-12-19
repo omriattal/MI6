@@ -18,8 +18,10 @@ import java.util.List;
  */
 public class Moneypenny extends Subscriber {
 	private Squad squad;
-	public Moneypenny() {
+	int serialNumber;
+	public Moneypenny(int serialNumber) {
 		super("Moneypenny");
+		this.serialNumber=serialNumber;
 		squad = Squad.getInstance();
 	}
 

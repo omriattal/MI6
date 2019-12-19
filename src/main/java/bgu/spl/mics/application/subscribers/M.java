@@ -15,9 +15,12 @@ import java.util.List;
  */
 public class M extends Subscriber {
 	Diary diary = Diary.getInstance();
+	int serialNumber;
 //TODO: Refactor and update diary.
-	public M() {
+	public M(int serialNumber) {
 		super("M");
+		this.serialNumber = serialNumber;
+
 	}
 
 	@Override
