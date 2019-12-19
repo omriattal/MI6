@@ -17,14 +17,11 @@ public class Q extends Subscriber {
     private static Q instance = null;
     private int currentTick;
 
-    private Q() {
+    public Q() {
         super("Q");
+        currentTick = 0;
     }
 
-    public static Q getInstance() {
-        if (instance == null) instance = new Q();
-        return instance;
-    }
 
     @Override
     protected void initialize() {
