@@ -1,6 +1,9 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.*;
+import bgu.spl.mics.Future;
+import bgu.spl.mics.MessageBrokerImpl;
+import bgu.spl.mics.SimplePublisher;
+import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
@@ -15,16 +18,16 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class M extends Subscriber {
-	Diary diary = Diary.getInstance();
-	int serialNumber;
+    Diary diary = Diary.getInstance();
+    int serialNumber;
     private int currentTick;
 
     //TODO: Refactor and update diary.
-	public M(int serialNumber) {
-		super("M");
-		this.serialNumber = serialNumber;
+    public M(int serialNumber) {
+        super("M");
+        this.serialNumber = serialNumber;
         currentTick = 0;
-	}
+    }
 
     @Override
     protected void initialize() {
@@ -55,7 +58,7 @@ public class M extends Subscriber {
             Pair<Boolean, Integer> qResult = gadgetAvailableFuture.get();
             if (qResult.getValue() > missionInfo.getTimeExpired()) {
                 Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
-                while (release != null && release.get() == null){
+                while (release != null && release.get() == null) {
                     release = publish.sendEvent(new ReleaseAgentsEvent(serials));
                 }
                 return;
@@ -75,7 +78,7 @@ public class M extends Subscriber {
     }
 
     private void subscribeToTimeTick() {
-        subscribeBroadcast(TickBroadcast.class, (broadcast)->{
+        subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
             setCurrentTick(broadcast.getTimeTick());
         });
     }
