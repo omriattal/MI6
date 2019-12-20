@@ -83,6 +83,10 @@ public class Squad {
                 return false;
             }
             else {
+                try {
+                    if (!agent.isAvailable()) wait();
+                } catch (InterruptedException ignored){
+                }
                 agent.acquire();
             }
         }

@@ -6,6 +6,7 @@ import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.GadgetAvailableEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.Inventory;
+import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
 /**
  * Q is the only Subscriber\Publisher that has access to the {@link bgu.spl.mics.application.passiveObjects.Inventory}.
@@ -27,7 +28,15 @@ public class Q extends Subscriber {
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this); //registers Q to the messagebroker
         subscribeToTimeTick();
+        subscribeTofinalTickBroadcast();
         subscribeToGadgetAvailableEvent();
+    }
+
+    private void subscribeTofinalTickBroadcast() {
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+            MessageBrokerImpl.getInstance().unregister(this);
+            terminate();
+        });
     }
 
     private void subscribeToTimeTick() {

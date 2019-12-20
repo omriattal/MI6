@@ -8,6 +8,7 @@ import bgu.spl.mics.application.messages.SendAgentsEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.AgentsAvailableRport;
 import bgu.spl.mics.application.passiveObjects.Squad;
+import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
 import java.util.List;
 
@@ -34,12 +35,20 @@ public class Moneypenny extends Subscriber {
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
+        subscribeTofinalTickBroadcast();
         if (serialNumber % 2 == 0) {
             subscribeToAgentsAvailableEvent();
         }
         else {
             subscribeToReleasingEvents();
         }
+    }
+
+    private void subscribeTofinalTickBroadcast() {
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+            MessageBrokerImpl.getInstance().unregister(this);
+            terminate();
+        });
     }
 
     private void subscribeToReleasingEvents() {

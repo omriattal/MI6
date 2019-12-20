@@ -59,29 +59,30 @@ public class M extends Subscriber {
                 return;
             }
             if (gadgetAvailableFuture.get() == null || !gadgetAvailableFuture.get().getFirst()) {
-                Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
-                while (release != null && release.get() == null) {
-                    release = publish.sendEvent(new ReleaseAgentsEvent(serials));
-                }
+                releaseAgents(publish, serials);
                 return;
             }
 
             Pair<Boolean, Integer> qResult = gadgetAvailableFuture.get();
             if (qResult.getSecond() > missionInfo.getTimeExpired()) {
-                Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
-                while (release != null && release.get() == null) {
-                    release = publish.sendEvent(new ReleaseAgentsEvent(serials));
-                }
+                releaseAgents(publish, serials);
                 return;
             }
 
             Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials, missionDuration));
             if (agentsSentFuture == null) {
-                publish.sendEvent(new ReleaseAgentsEvent(serials));
+                releaseAgents(publish, serials);
                 return;
             }
             complete(event, true);
         });
+    }
+
+    private void releaseAgents(SimplePublisher publish, List<String> serials) {
+        Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
+        while (release != null && release.get() == null) {
+            release = publish.sendEvent(new ReleaseAgentsEvent(serials));
+        }
     }
 
     private void subscribeToTimeTick() {

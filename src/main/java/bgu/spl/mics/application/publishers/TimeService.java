@@ -2,9 +2,8 @@ package bgu.spl.mics.application.publishers;
 
 import bgu.spl.mics.Publisher;
 import bgu.spl.mics.SimplePublisher;
+import bgu.spl.mics.application.messages.FinalTickBroadcast;
 import bgu.spl.mics.application.messages.TickBroadcast;
-
-import java.sql.Time;
 
 /**
  * TimeService is the global system timer There is only one instance of this Publisher.
@@ -19,11 +18,13 @@ public class TimeService extends Publisher {
     private static TimeService instance = null;
     private int currentTick;
     private int totalTicks;
+
     public TimeService(int totalTicks) {
         super("TimeService");
         currentTick = 0;
         this.totalTicks = totalTicks;
     }
+
     @Override
     protected void initialize() {
 
@@ -32,7 +33,7 @@ public class TimeService extends Publisher {
     @Override
     public void run() {
         SimplePublisher publisher = getSimplePublisher();
-        while(currentTick<totalTicks) {
+        while (currentTick < totalTicks - 1) {
             publisher.sendBroadcast(new TickBroadcast(currentTick));
             try {
                 Thread.sleep(100);
@@ -40,7 +41,7 @@ public class TimeService extends Publisher {
             }
             currentTick++;
         }
-
+        publisher.sendBroadcast(new FinalTickBroadcast());
     }
 
 }

@@ -1,14 +1,13 @@
 package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.MessageBrokerImpl;
-import bgu.spl.mics.Publisher;
 import bgu.spl.mics.SimplePublisher;
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.messages.MissionReceivedEvent;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
+import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -24,23 +23,30 @@ public class Intelligence extends Subscriber {
 	private int serialNumber;
 	private List<MissionInfo> missionInfoList;
 
-	public Intelligence(int serialNumber) {
+	public Intelligence(int serialNumber, List<MissionInfo> missionInfoList) {
 		super("Intelligence");
 		this.serialNumber = serialNumber;
 		currentTick = 0;
-		missionInfoList = new ArrayList<>();
+		this.missionInfoList = missionInfoList;
 		sortMissions();
+	}
+
+	private void sortMissions() {
+		missionInfoList.sort(Comparator.comparingInt(MissionInfo::getTimeIssued));
 	}
 
 	@Override
 	protected void initialize() {
 		MessageBrokerImpl.getInstance().register(this);
 		subscribeToTimeTick();
+		subscribeTofinalTickBroadcast();
 	}
 
-	private void sortMissions() {
-		missionInfoList.sort(Comparator.comparingInt(MissionInfo::getTimeIssued));
-
+	private void subscribeTofinalTickBroadcast() {
+		subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+			MessageBrokerImpl.getInstance().unregister(this);
+			terminate();
+		});
 	}
 
 	private void subscribeToTimeTick() {

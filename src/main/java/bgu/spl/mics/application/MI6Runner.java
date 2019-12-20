@@ -77,7 +77,6 @@ public class   MI6Runner {
         JsonObject services = jsonObject.getAsJsonObject("services");
         int time = services.get("time").getAsInt();
         return new TimeService(time);
-
     }
 
 }
