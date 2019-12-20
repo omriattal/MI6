@@ -1,7 +1,8 @@
 package bgu.spl.mics;
 
 
-import javafx.util.Pair;
+
+import com.sun.tools.javac.util.Pair;
 
 import java.util.Map;
 import java.util.concurrent.*;
@@ -61,12 +62,12 @@ public class MessageBrokerImpl implements MessageBroker {
 
     private ConcurrentLinkedQueue<Subscriber> getTopicQueue(Class<? extends Message> topic) {
         Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(topic);
-        return topicPair.getValue();
+        return topicPair.snd;
     }
 
     private Semaphore getTopicQueueLock(Class<? extends Message> topic) {
         Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(topic);
-        return topicPair.getKey();
+        return topicPair.fst;
     }
 
     @Override
@@ -132,7 +133,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
     private void addToSubQueue(Message b, Subscriber subscriber) throws InterruptedException {
         Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(subscriber);
-        Semaphore subSemaphore = subPair.getKey();
+        Semaphore subSemaphore = subPair.fst;
 
         subSemaphore.acquire();
         try {
@@ -173,7 +174,7 @@ public class MessageBrokerImpl implements MessageBroker {
     private void removeFromTopicMap(Subscriber m) {
         for (Map.Entry<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> entry : topicMap.entrySet()) {
             Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = entry.getValue();
-            topicPair.getValue().remove(m);
+            topicPair.snd.remove(m);
         }
     }
 
@@ -186,7 +187,7 @@ public class MessageBrokerImpl implements MessageBroker {
         }
 
         Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
-        Semaphore subSemaphore = subPair.getKey();
+        Semaphore subSemaphore = subPair.fst;
 
         subSemaphore.acquire();
         try {
@@ -198,7 +199,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
     private BlockingQueue<Message> getSubQueue(Subscriber m) {
         Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
-        return subPair.getValue();
+        return subPair.snd;
     }
 
     private static class Instance {
