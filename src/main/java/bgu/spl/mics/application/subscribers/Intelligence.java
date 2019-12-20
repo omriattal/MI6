@@ -13,7 +13,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Intelligence is a Subscriber
+ * Subscriber/Publisher
  * Holds a list of Info objects and sends them
  * <p>
  * You can add private fields and public methods to this class.
@@ -27,6 +27,7 @@ public class Intelligence extends Subscriber {
 	public Intelligence(int serialNumber) {
 		super("Intelligence");
 		this.serialNumber = serialNumber;
+		currentTick = 0;
 		missionInfoList = new ArrayList<>();
 		sortMissions();
 	}

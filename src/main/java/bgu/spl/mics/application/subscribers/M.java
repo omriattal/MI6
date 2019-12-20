@@ -1,9 +1,13 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.*;
+import bgu.spl.mics.Future;
+import bgu.spl.mics.MessageBrokerImpl;
+import bgu.spl.mics.SimplePublisher;
+import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
+import jdk.incubator.http.internal.common.Pair;
 
 import java.util.List;
 
@@ -14,20 +18,21 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class M extends Subscriber {
-	Diary diary = Diary.getInstance();
-	int serialNumber;
+    Diary diary = Diary.getInstance();
+    int serialNumber;
     private int currentTick;
 
     //TODO: Refactor and update diary.
-	public M(int serialNumber) {
-		super("M");
-		this.serialNumber = serialNumber;
-
-	}
+    public M(int serialNumber) {
+        super("M");
+        this.serialNumber = serialNumber;
+        currentTick = 0;
+    }
 
     @Override
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this);
+        subscribeToTimeTick();
         subscribeToMissionAvailableEvent();
     }
 
@@ -39,36 +44,41 @@ public class M extends Subscriber {
             int missionDuration = missionInfo.getDuration();
 
             Future<Boolean> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
-            if (agentsAvailableFuture == null || !agentsAvailableFuture.get()) {
+            if (futureOrResultIsNull(agentsAvailableFuture) || !agentsAvailableFuture.get()) {
                 complete(event, false);
                 return;
             }
 
-            Future<Boolean> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
-            if (gadgetAvailableFuture == null || !gadgetAvailableFuture.get()) {
+            Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
+            if (futureOrResultIsNull(gadgetAvailableFuture) || !gadgetAvailableFuture.get().first) {
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
-                complete(event, false);
                 return;
             }
 
-            if (timePassed()) {
-                publish.sendEvent(new ReleaseAgentsEvent(serials));
-                complete(event, false);
+            Pair<Boolean, Integer> qResult = gadgetAvailableFuture.get();
+            if (qResult.second > missionInfo.getTimeExpired()) {
+                Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
+                while (release != null && release.get() == null) {
+                    release = publish.sendEvent(new ReleaseAgentsEvent(serials));
+                }
                 return;
             }
 
             Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials, missionDuration));
             if (agentsSentFuture == null) {
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
-                complete(event, false);
                 return;
             }
             complete(event, true);
         });
     }
 
+    private <T> boolean futureOrResultIsNull(Future<T> gadgetAvailableFuture) {
+        return gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null;
+    }
+
     private void subscribeToTimeTick() {
-        subscribeBroadcast(TickBroadcast.class, (broadcast)->{
+        subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
             setCurrentTick(broadcast.getTimeTick());
         });
     }
@@ -76,10 +86,4 @@ public class M extends Subscriber {
     private void setCurrentTick(int timeTick) {
         this.currentTick = timeTick;
     }
-
-    private boolean timePassed() {
-        //TODO: Implement timePassed
-        return false;
-    }
-
 }
