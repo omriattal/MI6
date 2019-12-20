@@ -21,38 +21,49 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-/** This is the Main class of the application. You should parse the input file,
+/**
+ * This is the Main class of the application. You should parse the input file,
  * create the different instances of the objects, and run the system.
  * In the end, you should output serialized objects.
- *
  */
-public class  MI6Runner {
+public class MI6Runner {
     public static void main(String[] args) {
         String filePath = args[0];
         JsonObject jsonObject = null;
-        try{
+        try {
             jsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
             List<Subscriber> subscribers = loadSubscribers(jsonObject);
+            List<Thread> threadList = new ArrayList<>();
+            Thread newThread;
+            for (Subscriber subscriber : subscribers) {
+                newThread = new Thread(subscriber);
+                threadList.add(newThread);
+                newThread.start();
+            }
+            for (Thread thread : threadList) {
 
+            }
+        } catch (FileNotFoundException ignored) {
         }
-        catch (FileNotFoundException ignored) {}
     }
+
     private static void loadInventory(JsonObject jsonObject) {
         JsonArray inventory = jsonObject.getAsJsonArray("Inventory");
         String[] gadgets = new String[inventory.size()];
         int index = 0;
-        for (JsonElement gadget: inventory) {
+        for (JsonElement gadget : inventory) {
             String nameOfGadget = gadget.getAsJsonObject().get("name").getAsString();
             gadgets[index] = nameOfGadget;
         }
         Inventory.getInstance().load(gadgets);
     }
+
     private static void loadSquad(JsonObject jsonObject) {
         JsonArray squad = jsonObject.getAsJsonArray("squad");
         Agent[] agents = new Agent[squad.size()];
         Agent agent;
         int index = 0;
-        for (JsonElement agentElement: squad) {
+        for (JsonElement agentElement : squad) {
             agent = new Agent();
             agent.setName(agentElement.getAsJsonObject().get("name").getAsString());
             agent.setSerialNumber(agentElement.getAsJsonObject().get("serialNumber").getAsString());
@@ -62,7 +73,7 @@ public class  MI6Runner {
         Squad.getInstance().load(agents);
     }
 
-    private static List<Subscriber> loadSubscribers (JsonObject jsonObject) {
+    private static List<Subscriber> loadSubscribers(JsonObject jsonObject) {
         JsonObject services = jsonObject.getAsJsonObject("services");
         int amountOfM = services.get("M").getAsInt();
         JsonArray intelligences = services.get("intelligence").getAsJsonArray();
@@ -86,7 +97,7 @@ public class  MI6Runner {
         JsonObject mission;
         List<String> agentsSerials;
         int intelId = 0;
-        for (JsonElement intelligence: intelligences) {
+        for (JsonElement intelligence : intelligences) {
             missionInfoList = new ArrayList<>();
             missions = intelligence.getAsJsonObject().get("missions").getAsJsonArray();
             populateMissionInfoList(missionInfoList, missions);

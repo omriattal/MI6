@@ -26,7 +26,7 @@ public class Q extends Subscriber {
 
     @Override
     protected void initialize() {
-        MessageBrokerImpl.getInstance().register(this); //registers Q to the messagebroker
+        MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
         subscribeToGadgetAvailableEvent();
