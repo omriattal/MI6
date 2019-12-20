@@ -1,6 +1,9 @@
 package bgu.spl.mics.application.passiveObjects;
 
 
+import bgu.spl.mics.application.subscribers.M;
+import bgu.spl.mics.application.subscribers.Moneypenny;
+
 import java.util.List;
 
 /**
@@ -10,50 +13,46 @@ import java.util.List;
  * You may add ONLY private fields and methods to this class.
  */
 public class Report {
+    private String missionName;
+    private int mId;
+    private int moneypennyId;
+    private List<String> agentSerials;
+    private List<String> agentNames;
+    private String gadget;
+    private int qTime;
+    private int timeIssued;
+    private int timeCreated;
+
     /**
      * Retrieves the mission name.
      */
-    public String getMissionName() {
-        // TODO Implement this
-        return null;
-    }
+    public String getMissionName() { return missionName;}
 
     /**
      * Sets the mission name.
      */
-    public void setMissionName(String missionName) {
-        // TODO Implement this
-    }
+    public void setMissionName(String missionName) { this.missionName = missionName;}
 
     /**
      * Retrieves the M's id.
      */
-    public int getM() {
-        // TODO Implement this
-        return 0;
-    }
+    public int getM() {return mId;}
 
     /**
      * Sets the M's id.
      */
-    public void setM(int m) {
-        // TODO Implement this
-    }
+    public void setM(int m) {this.mId =m;}
+
 
     /**
      * Retrieves the Moneypenny's id.
      */
-    public int getMoneypenny() {
-        // TODO Implement this
-        return 0;
-    }
+    public int getMoneypenny() {return moneypennyId; }
 
     /**
      * Sets the Moneypenny's id.
      */
-    public void setMoneypenny(int moneypenny) {
-        // TODO Implement this
-    }
+    public void setMoneypenny(int moneypenny) { this.moneypennyId = moneypenny; }
 
     /**
      * Retrieves the serial numbers of the agents.
@@ -61,17 +60,12 @@ public class Report {
      *
      * @return The serial numbers of the agents.
      */
-    public List<String> getAgentsSerialNumbers() {
-        // TODO Implement this
-        return null;
-    }
+    public List<String> getAgentsSerialNumbers() { return agentSerials; }
 
     /**
      * Sets the serial numbers of the agents.
      */
-    public void setAgentsSerialNumbers(List<String> agentsSerialNumbers) {
-        // TODO Implement this
-    }
+    public void setAgentsSerialNumbers(List<String> agentsSerialNumbers) { this.agentSerials = agentsSerialNumbers; }
 
     /**
      * Retrieves the agents names.
@@ -79,17 +73,12 @@ public class Report {
      *
      * @return The agents names.
      */
-    public List<String> getAgentsNames() {
-        // TODO Implement this
-        return null;
-    }
+    public List<String> getAgentsNames() { return agentNames; }
 
     /**
      * Sets the agents names.
      */
-    public void setAgentsNames(List<String> agentsNames) {
-        // TODO Implement this
-    }
+    public void setAgentsNames(List<String> agentsNames) { this.agentNames = agentsNames; }
 
     /**
      * Retrieves the name of the gadget.
@@ -97,60 +86,40 @@ public class Report {
      *
      * @return the name of the gadget.
      */
-    public String getGadgetName() {
-        // TODO Implement this
-        return null;
-    }
+    public String getGadgetName() { return  gadget;}
 
     /**
      * Sets the name of the gadget.
      */
-    public void setGadgetName(String gadgetName) {
-        // TODO Implement this
-    }
+    public void setGadgetName(String gadgetName) { this.gadget = gadget; }
 
     /**
      * Retrieves the time-tick in which Q Received the GadgetAvailableEvent for that mission.
      */
-    public int getQTime() {
-        // TODO Implement this
-        return 0;
-    }
+    public int getQTime() { return  qTime;}
 
     /**
      * Sets the time-tick in which Q Received the GadgetAvailableEvent for that mission.
      */
-    public void setQTime(int qTime) {
-        // TODO Implement this
-    }
+    public void setQTime(int qTime) { this.qTime = qTime; }
 
     /**
      * Retrieves the time when the mission was sent by an Intelligence Publisher.
      */
-    public int getTimeIssued() {
-        // TODO Implement this
-        return 0;
-    }
+    public int getTimeIssued() { return timeIssued; }
 
     /**
      * Sets the time when the mission was sent by an Intelligence Publisher.
      */
-    public void setTimeIssued(int timeIssued) {
-        // TODO Implement this
-    }
+    public void setTimeIssued(int timeIssued) { this.timeIssued = timeIssued; }
 
     /**
      * Retrieves the time-tick when the report has been created.
      */
-    public int getTimeCreated() {
-        // TODO Implement this
-        return 0;
-    }
+    public int getTimeCreated() { return timeCreated; }
 
     /**
      * Sets the time-tick when the report has been created.
      */
-    public void setTimeCreated(int timeCreated) {
-        // TODO Implement this
-    }
+    public void setTimeCreated(int timeCreated) { this.timeCreated = timeCreated; }
 }

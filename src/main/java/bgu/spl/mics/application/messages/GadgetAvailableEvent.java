@@ -1,7 +1,7 @@
 package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
-import javafx.util.Pair;
+import com.sun.tools.javac.util.Pair;
 
 public class GadgetAvailableEvent implements Event<Pair<Boolean, Integer>> {
     private String gadget;
