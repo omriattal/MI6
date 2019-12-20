@@ -1,6 +1,6 @@
 package bgu.spl.mics;
 
-abstract class RunnableSubPub implements Runnable {
+public abstract class RunnableSubPub implements Runnable {
     private final String name;
     private final SimplePublisher simplePublisher;
 
