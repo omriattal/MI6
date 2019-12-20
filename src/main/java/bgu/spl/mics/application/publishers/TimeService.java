@@ -19,7 +19,7 @@ public class TimeService extends Publisher {
     private static TimeService instance = null;
     private int currentTick;
     private int totalTicks;
-    private TimeService(int totalTicks) {
+    public TimeService(int totalTicks) {
         super("TimeService");
         currentTick = 0;
         this.totalTicks = totalTicks;

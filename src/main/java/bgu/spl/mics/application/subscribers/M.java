@@ -35,6 +35,8 @@ public class M extends Subscriber {
 
     private void subscribeToMissionAvailableEvent() {
         subscribeEvent(MissionReceivedEvent.class, (event) -> {
+            diary.incrementTotal();
+
             MissionInfo missionInfo = event.getMissionInfo();
             SimplePublisher publish = getSimplePublisher();
             List<String> serials = missionInfo.getSerialAgentsNumbers();

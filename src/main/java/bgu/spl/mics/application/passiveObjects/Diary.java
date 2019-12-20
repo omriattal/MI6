@@ -55,7 +55,6 @@ public class Diary {
      */
     public void incrementTotal(){
         total++;
-
     }
 
     private static class Instance {
