@@ -2,6 +2,7 @@ package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.*;
 import bgu.spl.mics.application.messages.*;
+import bgu.spl.mics.application.passiveObjects.AgentsAvailableRport;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
 
@@ -39,15 +40,27 @@ public class M extends Subscriber {
             List<String> serials = missionInfo.getSerialAgentsNumbers();
             int missionDuration = missionInfo.getDuration();
 
-            Future<Boolean> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
-            if (futureOrResultIsNull(agentsAvailableFuture) || !agentsAvailableFuture.get()) {
-                complete(event, false);
+            Future<AgentsAvailableRport> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
+            if (agentsAvailableFuture == null) {
+                MessageBrokerImpl.getInstance().unregister(this);
+                terminate();
+                return;
+            }
+            if (agentsAvailableFuture.get() == null || !agentsAvailableFuture.get().getResult()) {
                 return;
             }
 
             Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
-            if (futureOrResultIsNull(gadgetAvailableFuture) || !gadgetAvailableFuture.get().getFirst()) {
-                publish.sendEvent(new ReleaseAgentsEvent(serials));
+            if (gadgetAvailableFuture == null) {
+                MessageBrokerImpl.getInstance().unregister(this);
+                terminate();
+                return;
+            }
+            if (gadgetAvailableFuture.get() == null || !gadgetAvailableFuture.get().getFirst()) {
+                Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
+                while (release != null && release.get() == null) {
+                    release = publish.sendEvent(new ReleaseAgentsEvent(serials));
+                }
                 return;
             }
 
@@ -67,10 +80,6 @@ public class M extends Subscriber {
             }
             complete(event, true);
         });
-    }
-
-    private <T> boolean futureOrResultIsNull(Future<T> gadgetAvailableFuture) {
-        return gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null;
     }
 
     private void subscribeToTimeTick() {

@@ -3,17 +3,17 @@ package bgu.spl.mics.application.passiveObjects;
 import java.util.List;
 
 public class AgentsAvailableRport {
-    private int moneypenny;
+    private int moneypennyId;
     private Boolean result;
     private List<String> agentNames;
 
-    public AgentsAvailableRport(int moneypenny, Boolean result, List<String> agentNames) {
-        this.moneypenny = moneypenny;
+    public AgentsAvailableRport(int moneypennyId, Boolean result, List<String> agentNames) {
+        this.moneypennyId = moneypennyId;
         this.result = result;
         this.agentNames = agentNames;
     }
-    public int getMoneypenny() {
-        return moneypenny;
+    public int getMoneypennyId() {
+        return moneypennyId;
     }
 
     public Boolean getResult() {

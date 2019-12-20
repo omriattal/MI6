@@ -122,16 +122,13 @@ public abstract class Subscriber extends RunnableSubPub {
     @Override
     public final void run() {
         initialize();
-        try {
-            while (!interrupted() & !terminated) {
+        while (!interrupted() & !terminated) {
+            try {
                 Message message = messageBroker.awaitMessage(this);
                 Callback callback = callbackMap.get(message.getClass());
                 callback.call(message);
-
+            } catch (InterruptedException ignored){
             }
-            MessageBrokerImpl.getInstance().unregister(this);
-        } catch (InterruptedException ignored){
-
         }
     }
 
