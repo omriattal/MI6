@@ -40,10 +40,26 @@ public class MI6Runner {
                 threadList.add(newThread);
                 newThread.start();
             }
-            for (Thread thread : threadList) {
 
-            }
+            confirmThreadsStarted(threadList);
+
+            TimeService timeService = createTimeService(jsonObject);
+            Thread timeServiceThread = new Thread(timeService);
+            timeServiceThread.start();
         } catch (FileNotFoundException ignored) {
+        }
+    }
+
+    private static void confirmThreadsStarted(List<Thread> threadList) {
+        boolean threadsInitialized = false;
+        while (!threadsInitialized) {
+            threadsInitialized = true;
+            for (Thread thread : threadList) {
+                if (thread.getState() != Thread.State.WAITING) {
+                    threadsInitialized = false;
+                    break;
+                }
+            }
         }
     }
 
