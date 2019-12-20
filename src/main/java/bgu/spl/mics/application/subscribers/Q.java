@@ -28,11 +28,11 @@ public class Q extends Subscriber {
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this); //registers Q to the messagebroker
         subscribeToTimeTick();
-        subscribeTofinalTickBroadcast();
+        subscribeToFinalTickBroadcast();
         subscribeToGadgetAvailableEvent();
     }
 
-    private void subscribeTofinalTickBroadcast() {
+    private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
             MessageBrokerImpl.getInstance().unregister(this);
             terminate();

@@ -35,7 +35,7 @@ public class Moneypenny extends Subscriber {
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
-        subscribeTofinalTickBroadcast();
+        subscribeToFinalTickBroadcast();
         if (serialNumber % 2 == 0) {
             subscribeToAgentsAvailableEvent();
         }
@@ -44,7 +44,7 @@ public class Moneypenny extends Subscriber {
         }
     }
 
-    private void subscribeTofinalTickBroadcast() {
+    private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
             MessageBrokerImpl.getInstance().unregister(this);
             terminate();

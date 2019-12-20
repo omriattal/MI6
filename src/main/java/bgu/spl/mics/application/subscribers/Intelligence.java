@@ -39,10 +39,10 @@ public class Intelligence extends Subscriber {
 	protected void initialize() {
 		MessageBrokerImpl.getInstance().register(this);
 		subscribeToTimeTick();
-		subscribeTofinalTickBroadcast();
+		subscribeToFinalTickBroadcast();
 	}
 
-	private void subscribeTofinalTickBroadcast() {
+	private void subscribeToFinalTickBroadcast() {
 		subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
 			MessageBrokerImpl.getInstance().unregister(this);
 			terminate();
