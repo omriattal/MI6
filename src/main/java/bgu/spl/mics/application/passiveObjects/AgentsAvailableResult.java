@@ -2,12 +2,12 @@ package bgu.spl.mics.application.passiveObjects;
 
 import java.util.List;
 
-public class AgentsAvailableRport {
+public class AgentsAvailableResult {
     private int moneypenny;
     private Boolean result;
     private List<String> agentNames;
 
-    public AgentsAvailableRport(int moneypenny, Boolean result, List<String> agentNames) {
+    public AgentsAvailableResult(int moneypenny, Boolean result, List<String> agentNames) {
         this.moneypenny = moneypenny;
         this.result = result;
         this.agentNames = agentNames;

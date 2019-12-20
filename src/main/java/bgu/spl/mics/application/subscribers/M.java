@@ -2,7 +2,7 @@ package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.*;
 import bgu.spl.mics.application.messages.*;
-import bgu.spl.mics.application.passiveObjects.AgentsAvailableRport;
+import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
 
@@ -30,6 +30,7 @@ public class M extends Subscriber {
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
+        subscribeToFinalTickBroadcast();
         subscribeToMissionAvailableEvent();
     }
 
@@ -42,7 +43,7 @@ public class M extends Subscriber {
             List<String> serials = missionInfo.getSerialAgentsNumbers();
             int missionDuration = missionInfo.getDuration();
 
-            Future<AgentsAvailableRport> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
+            Future<AgentsAvailableResult> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
             if (agentsAvailableFuture == null) {
                 MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
@@ -88,6 +89,13 @@ public class M extends Subscriber {
     private void subscribeToTimeTick() {
         subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
             setCurrentTick(broadcast.getTimeTick());
+        });
+    }
+
+    private void subscribeToFinalTickBroadcast() {
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+            MessageBrokerImpl.getInstance().unregister(this);
+            terminate();
         });
     }
 

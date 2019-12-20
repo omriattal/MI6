@@ -1,11 +1,11 @@
 package bgu.spl.mics.application.messages;
 
 import bgu.spl.mics.Event;
-import bgu.spl.mics.application.passiveObjects.AgentsAvailableRport;
+import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 
 import java.util.List;
 
-public class AgentsAvailableEvent implements Event<AgentsAvailableRport> {
+public class AgentsAvailableEvent implements Event<AgentsAvailableResult> {
     List<String> serials;
 
     public AgentsAvailableEvent(List<String> serials){

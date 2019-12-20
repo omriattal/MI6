@@ -6,7 +6,7 @@ import bgu.spl.mics.application.messages.AgentsAvailableEvent;
 import bgu.spl.mics.application.messages.ReleaseAgentsEvent;
 import bgu.spl.mics.application.messages.SendAgentsEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
-import bgu.spl.mics.application.passiveObjects.AgentsAvailableRport;
+import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 import bgu.spl.mics.application.passiveObjects.Squad;
 import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
@@ -61,7 +61,7 @@ public class Moneypenny extends Subscriber {
             List<String> agentsToCheck = event.getSerials();
             List<String> agentNames = squad.getAgentsNames(agentsToCheck);
             boolean result = squad.getAgents(agentsToCheck);
-            complete(event,new AgentsAvailableRport(serialNumber,result,agentNames));
+            complete(event,new AgentsAvailableResult(serialNumber,result,agentNames));
 
         });
     }
