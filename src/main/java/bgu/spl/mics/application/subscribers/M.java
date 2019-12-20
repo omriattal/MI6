@@ -1,13 +1,9 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.Future;
-import bgu.spl.mics.MessageBrokerImpl;
-import bgu.spl.mics.SimplePublisher;
-import bgu.spl.mics.Subscriber;
+import bgu.spl.mics.*;
 import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
-import jdk.incubator.http.internal.common.Pair;
 
 import java.util.List;
 
@@ -50,13 +46,13 @@ public class M extends Subscriber {
             }
 
             Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
-            if (futureOrResultIsNull(gadgetAvailableFuture) || !gadgetAvailableFuture.get().first) {
+            if (futureOrResultIsNull(gadgetAvailableFuture) || !gadgetAvailableFuture.get().getFirst()) {
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;
             }
 
             Pair<Boolean, Integer> qResult = gadgetAvailableFuture.get();
-            if (qResult.second > missionInfo.getTimeExpired()) {
+            if (qResult.getSecond() > missionInfo.getTimeExpired()) {
                 Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
                 while (release != null && release.get() == null) {
                     release = publish.sendEvent(new ReleaseAgentsEvent(serials));
