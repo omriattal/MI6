@@ -33,6 +33,7 @@ public class  MI6Runner {
         try{
             jsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
             List<Subscriber> subscribers = loadSubscribers(jsonObject);
+
         }
         catch (FileNotFoundException ignored) {}
     }
@@ -60,7 +61,7 @@ public class  MI6Runner {
         }
         Squad.getInstance().load(agents);
     }
-    //TODO: refactor
+
     private static List<Subscriber> loadSubscribers (JsonObject jsonObject) {
         JsonObject services = jsonObject.getAsJsonObject("services");
         int amountOfM = services.get("M").getAsInt();
@@ -114,7 +115,7 @@ public class  MI6Runner {
 
     private static void populateAgentsSerials(JsonObject mission, List<String> agentsSerials) {
         for (JsonElement agentSerialsElement : mission.get("agents").getAsJsonArray()) {
-            agentsSerials.add(agentSerialsElement.getAsJsonObject().get("name").getAsString());
+            agentsSerials.add(agentSerialsElement.getAsJsonObject().get("serialNumber").getAsString());
         }
     }
 
