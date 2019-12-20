@@ -5,6 +5,6 @@ package bgu.spl.mics;
  */
 public interface Callback<T> {
 
-    void call(T c);
+    void call(T c) throws InterruptedException;
 
 }

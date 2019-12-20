@@ -12,12 +12,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class Future<T> {
     private T result;
+    private boolean isDone;
 
     /**
      * This should be the the only public constructor in this class.
      */
     public Future() {
         result = null;
+        isDone = false;
     }
 
     /**
@@ -47,14 +49,19 @@ public class Future<T> {
      */
     public synchronized void resolve(T result) {
         this.result = result;
+        setIsDone(true);
         notifyAll();
+    }
+
+    private void setIsDone(boolean isDone) {
+        this.isDone = isDone;
     }
 
     /**
      * @return true if this object has been resolved, false otherwise
      */
     public synchronized boolean isDone() {
-        return result != null;
+        return isDone;
     }
 
     /**
@@ -73,18 +80,9 @@ public class Future<T> {
      * @post: isDone() ? timeout not passed : timeout passed
      * TODO: rewrite post condition.
      */
-    //TODO: fix issue with timout
-    public synchronized T get(long timeout, TimeUnit unit) {
-        try {
-            while (!timedOut() && !isDone()) wait(unit.toMillis(timeout));
-        } catch (InterruptedException ignored) {
-        }
-        return result;
-    }
-
-    private boolean timedOut() {
-        //TODO: Implement timedOut
-        return false;
+    public T get(long timeout, TimeUnit unit) {
+        //TODO: implement this correctly
+        return null;
     }
 
 }

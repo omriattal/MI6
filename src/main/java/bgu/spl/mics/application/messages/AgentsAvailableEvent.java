@@ -7,7 +7,11 @@ import java.util.List;
 public class AgentsAvailableEvent implements Event<Boolean> {
     List<String> serials;
 
-    public AgentsAvailableEvent(){
+    public AgentsAvailableEvent(List<String> serials){
+        this.serials = serials;
+    }
 
+    public List<String> getSerials() {
+        return serials;
     }
 }
