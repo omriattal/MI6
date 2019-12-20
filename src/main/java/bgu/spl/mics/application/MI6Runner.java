@@ -1,11 +1,13 @@
 package bgu.spl.mics.application;
 
 
-import bgu.spl.mics.RunnableSubPub;
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.passiveObjects.Agent;
+import bgu.spl.mics.application.passiveObjects.Inventory;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
+import bgu.spl.mics.application.passiveObjects.Squad;
 import bgu.spl.mics.application.publishers.TimeService;
+import bgu.spl.mics.application.subscribers.Intelligence;
 import bgu.spl.mics.application.subscribers.M;
 import bgu.spl.mics.application.subscribers.Moneypenny;
 import bgu.spl.mics.application.subscribers.Q;
@@ -30,18 +32,19 @@ public class  MI6Runner {
         JsonObject jsonObject = null;
         try{
             jsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
+            List<Subscriber> subscribers = loadSubscribers(jsonObject);
         }
         catch (FileNotFoundException ignored) {}
-
     }
     private static void loadInventory(JsonObject jsonObject) {
         JsonArray inventory = jsonObject.getAsJsonArray("Inventory");
         String[] gadgets = new String[inventory.size()];
         int index = 0;
         for (JsonElement gadget: inventory) {
-            String nameOfGadget = gadget.getAsString();
+            String nameOfGadget = gadget.getAsJsonObject().get("name").getAsString();
             gadgets[index] = nameOfGadget;
         }
+        Inventory.getInstance().load(gadgets);
     }
     private static void loadSquad(JsonObject jsonObject) {
         JsonArray squad = jsonObject.getAsJsonArray("squad");
@@ -55,58 +58,76 @@ public class  MI6Runner {
             agents[index] = agent;
             index++;
         }
+        Squad.getInstance().load(agents);
     }
     //TODO: refactor
-    private static Subscriber[] loadSubscribers (JsonObject jsonObject) {
+    private static List<Subscriber> loadSubscribers (JsonObject jsonObject) {
         JsonObject services = jsonObject.getAsJsonObject("services");
         int amountOfM = services.get("M").getAsInt();
-        JsonArray missions = services.get("missions").getAsJsonArray();
+        JsonArray intelligences = services.get("intelligence").getAsJsonArray();
         int amountOfMoneyPenny = services.get("moneypenny").getAsInt();
-        int amountOfIntelligence = missions.size();
-        int amountOfQ = 1;
-        int amountOfThreads = amountOfM+amountOfMoneyPenny + amountOfQ +amountOfIntelligence;
-        Subscriber[] subscribers = new Subscriber[amountOfThreads];
-        int index = 0;
+        List<Subscriber> subscribers = new ArrayList<>();
 
-        index = loadM(amountOfM, subscribers, index);
-        index = loadMoneypenny(amountOfMoneyPenny, subscribers, index);
+        loadMoneypennySubs(amountOfMoneyPenny, subscribers);
+
+        loadMSubs(amountOfM, subscribers);
+
+        loadIntelligenceSubs(intelligences, subscribers);
+
+        subscribers.add(new Q());
+        return subscribers;
+    }
+
+    private static void loadIntelligenceSubs(JsonArray intelligences, List<Subscriber> subscribers) {
+        List<MissionInfo> missionInfoList;
+        MissionInfo missionInfo;
+        JsonArray missions;
+        JsonObject mission;
+        List<String> agentsSerials;
+        int intelId = 0;
+        for (JsonElement intelligence: intelligences) {
+            missionInfoList = new ArrayList<>();
+            missions = intelligence.getAsJsonObject().get("missions").getAsJsonArray();
+            populateMissionInfoList(missionInfoList, missions);
+            subscribers.add(new Intelligence(intelId, missionInfoList));
+            intelId++;
+        }
+    }
+
+    static void populateMissionInfoList(List<MissionInfo> missionInfoList, JsonArray missions) {
         MissionInfo missionInfo;
         JsonObject mission;
         List<String> agentsSerials;
         for (int i = 0; i < missions.size(); i++) {
-             missionInfo = new MissionInfo();
-             mission = missions.get(i).getAsJsonObject();
-             agentsSerials = new ArrayList<>();
-            for (JsonElement agentSerialsElement : mission.get("serialAgentsNumbers").getAsJsonArray()) {
-                agentsSerials.add(agentSerialsElement.getAsString());
-            }
+            missionInfo = new MissionInfo();
+            mission = missions.get(i).getAsJsonObject();
+            agentsSerials = new ArrayList<>();
+            populateAgentsSerials(mission, agentsSerials);
             missionInfo.setSerialAgentsNumbers(agentsSerials);
             missionInfo.setDuration(mission.get("duration").getAsInt());
             missionInfo.setGadget(mission.get("gadget").getAsString());
             missionInfo.setMissionName(mission.get("missionName").getAsString());
             missionInfo.setTimeExpired(mission.get("timeExpired").getAsInt());
-            subscribers[index] = new
-            index++;
+            missionInfoList.add(missionInfo);
         }
-
-        subscribers[index] = new Q();
-        return subscribers;
     }
 
-    private static int loadMoneypenny(int amountOfMoneyPenny, Subscriber[] subscribers, int index) {
-        for (int i = 0; i < amountOfMoneyPenny; i++) {
-            subscribers[index] = new Moneypenny(i);
-            index++;
+    private static void populateAgentsSerials(JsonObject mission, List<String> agentsSerials) {
+        for (JsonElement agentSerialsElement : mission.get("agents").getAsJsonArray()) {
+            agentsSerials.add(agentSerialsElement.getAsJsonObject().get("name").getAsString());
         }
-        return index;
     }
 
-    private static int loadM(int amountOfM, Subscriber[] subscribers, int index) {
+    private static void loadMSubs(int amountOfM, List<Subscriber> subscribers) {
         for (int i = 0; i < amountOfM; i++) {
-           subscribers[index] = new M(i);
-           index++;
+            subscribers.add(new M(i));
         }
-        return index;
+    }
+
+    private static void loadMoneypennySubs(int amountOfMoneyPenny, List<Subscriber> subscribers) {
+        for (int i = 0; i < amountOfMoneyPenny; i++) {
+            subscribers.add(new Moneypenny(i));
+        }
     }
 
     private static TimeService createTimeService(JsonObject jsonObject) {
