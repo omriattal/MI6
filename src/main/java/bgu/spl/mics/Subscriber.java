@@ -122,7 +122,7 @@ public abstract class Subscriber extends RunnableSubPub {
     @Override
     public final void run() {
         initialize();
-        while (!interrupted() & !terminated) {
+        while (!terminated) {
             try {
                 Message message = messageBroker.awaitMessage(this);
                 Callback callback = callbackMap.get(message.getClass());

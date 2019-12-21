@@ -16,7 +16,6 @@ import com.google.gson.JsonParser;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,7 +26,7 @@ import java.util.List;
 public class MI6Runner {
     public static void main(String[] args) {
         String filePath = args[0];
-        JsonObject jsonObject = null;
+        JsonObject jsonObject;
         try {
             jsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
             loadInventory(jsonObject);
@@ -41,20 +40,23 @@ public class MI6Runner {
                 threadsList.add(newThread);
                 newThread.start();
             }
-
-            confirmThreadsStarted(threadsList);
+            Thread.sleep(100);
 
             TimeService timeService = createTimeService(jsonObject);
             Thread timeServiceThread = new Thread(timeService);
             timeServiceThread.start();
 
-            for (Thread thread : threadsList) {
-                thread.join();
-            }
+            joinOtherRunningThreads(threadsList);
 
             Inventory.getInstance().printToFile(args[1]);
             Diary.getInstance().printToFile(args[2]);
         } catch (FileNotFoundException | InterruptedException ignored) {
+        }
+    }
+
+    private static void joinOtherRunningThreads(List<Thread> threadsList) throws InterruptedException {
+        for (Thread thread : threadsList) {
+            thread.join();
         }
     }
 
@@ -76,7 +78,7 @@ public class MI6Runner {
         String[] gadgets = new String[inventory.size()];
         int index = 0;
         for (JsonElement gadget : inventory) {
-            String nameOfGadget = gadget.getAsJsonObject().get("name").getAsString();
+            String nameOfGadget = gadget.getAsString();
             gadgets[index] = nameOfGadget;
             index++;
         }
@@ -92,6 +94,7 @@ public class MI6Runner {
             agent = new Agent();
             agent.setName(agentElement.getAsJsonObject().get("name").getAsString());
             agent.setSerialNumber(agentElement.getAsJsonObject().get("serialNumber").getAsString());
+            agent.release();
             agents[index] = agent;
             index++;
         }
@@ -145,13 +148,14 @@ public class MI6Runner {
             missionInfo.setGadget(mission.get("gadget").getAsString());
             missionInfo.setMissionName(mission.get("name").getAsString());
             missionInfo.setTimeExpired(mission.get("timeExpired").getAsInt());
+            missionInfo.setTimeIssued(mission.get("timeIssued").getAsInt());
             missionInfoList.add(missionInfo);
         }
     }
 
     private static void populateAgentsSerials(JsonObject mission, List<String> agentsSerials) {
-        for (JsonElement agentSerialsElement : mission.get("agents").getAsJsonArray()) {
-            agentsSerials.add(agentSerialsElement.getAsJsonObject().get("serialNumber").getAsString());
+        for (JsonElement agentSerialsElement : mission.get("serialAgentsNumbers").getAsJsonArray()) {
+            agentsSerials.add(agentSerialsElement.getAsString());
         }
     }
 

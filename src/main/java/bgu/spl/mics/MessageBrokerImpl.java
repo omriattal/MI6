@@ -128,15 +128,7 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     private void addToSubQueue(Message b, Subscriber subscriber) throws InterruptedException {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(subscriber);
-        Semaphore subSemaphore = subPair.getFirst();
-
-        subSemaphore.acquire();
-        try {
-            getSubQueue(subscriber).put(b);
-        } finally {
-            subSemaphore.release();
-        }
+        getSubQueue(subscriber).put(b);
     }
 
     @Override
@@ -160,8 +152,8 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     private void completeAllEventsOfSubscriberAsNull(Subscriber m) {
-        for(Message message: getSubQueue(m)){
-            if(message instanceof Event){
+        for (Message message : getSubQueue(m)) {
+            if (message instanceof Event) {
                 complete((Event) message, null);
             }
         }
@@ -182,15 +174,7 @@ public class MessageBrokerImpl implements MessageBroker {
             throw new IllegalStateException("No such Subscriber registered: " + m.getName());
         }
 
-        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
-        Semaphore subSemaphore = subPair.getFirst();
-
-        subSemaphore.acquire();
-        try {
-            return getSubQueue(m).take();
-        } finally {
-            subSemaphore.release();
-        }
+        return getSubQueue(m).take();
     }
 
     private BlockingQueue<Message> getSubQueue(Subscriber m) {

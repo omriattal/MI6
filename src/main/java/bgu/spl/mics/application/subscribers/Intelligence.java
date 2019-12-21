@@ -19,50 +19,53 @@ import java.util.List;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Intelligence extends Subscriber {
-	private int currentTick;
-	private int serialNumber;
-	private List<MissionInfo> missionInfoList;
+    private int currentTick;
+    private int serialNumber;
+    private List<MissionInfo> missionInfoList;
 
-	public Intelligence(int serialNumber, List<MissionInfo> missionInfoList) {
-		super("Intelligence");
-		this.serialNumber = serialNumber;
-		currentTick = 0;
-		this.missionInfoList = missionInfoList;
-		sortMissions();
-	}
+    public Intelligence(int serialNumber, List<MissionInfo> missionInfoList) {
+        super("Intelligence");
+        this.serialNumber = serialNumber;
+        currentTick = 0;
+        this.missionInfoList = missionInfoList;
+        sortMissions();
+    }
 
-	private void sortMissions() {
-		missionInfoList.sort(Comparator.comparingInt(MissionInfo::getTimeIssued));
-	}
+    private void sortMissions() {
+        missionInfoList.sort(Comparator.comparingInt(MissionInfo::getTimeIssued));
+    }
 
-	@Override
-	protected void initialize() {
-		MessageBrokerImpl.getInstance().register(this);
-		subscribeToTimeTick();
-		subscribeToFinalTickBroadcast();
-	}
+    @Override
+    protected void initialize() {
+        MessageBrokerImpl.getInstance().register(this);
+        subscribeToTimeTick();
+        subscribeToFinalTickBroadcast();
+    }
 
-	private void subscribeToFinalTickBroadcast() {
-		subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
-			MessageBrokerImpl.getInstance().unregister(this);
-			terminate();
-		});
-	}
+    private void subscribeToFinalTickBroadcast() {
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
+            MessageBrokerImpl.getInstance().unregister(this);
+            terminate();
+        });
+    }
 
-	private void subscribeToTimeTick() {
-		SimplePublisher publisher = getSimplePublisher();
-		subscribeBroadcast(TickBroadcast.class, (broadcast)->{
-			setCurrentTick(broadcast.getTimeTick());
-			MissionInfo missionInfo = missionInfoList.get(0);
-			if (currentTick == missionInfo.getTimeIssued())
-			{
-				publisher.sendEvent(new MissionReceivedEvent<>(missionInfo));
-				missionInfoList.remove(missionInfo);
-			}
-		});
-	}
+    private void subscribeToTimeTick() {
+        SimplePublisher publisher = getSimplePublisher();
+        subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
+            setCurrentTick(broadcast.getTimeTick());
+            if (!missionInfoList.isEmpty()) {
+                MissionInfo missionInfo = missionInfoList.get(0);
+                if (currentTick == missionInfo.getTimeIssued()) {
+                    //System.out.println("--------------Intelligence " + serialNumber + " will send mission " + missionInfo.getMissionName() + "------------------"); TODO: clean this
+                    publisher.sendEvent(new MissionReceivedEvent<>(missionInfo));
+                    missionInfoList.remove(missionInfo);
+                    //System.out.println("--------------Intelligence " + serialNumber + " Sent mission " + missionInfo.getMissionName() + "-------------------"); TODO: clean this
+                }
+            }
+        });
+    }
 
-	private void setCurrentTick(int timeTick) {
-		this.currentTick = timeTick;
-	}
+    private void setCurrentTick(int timeTick) {
+        this.currentTick = timeTick;
+    }
 }

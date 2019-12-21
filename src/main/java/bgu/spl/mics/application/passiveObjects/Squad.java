@@ -1,9 +1,6 @@
 package bgu.spl.mics.application.passiveObjects;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Passive data-object representing a information about an agent in MI6.
@@ -53,6 +50,9 @@ public class Squad {
             Agent agent = agents.get(serial);
             if (agent != null) agent.release();
         }
+        synchronized (this) {
+            notifyAll();
+        }
     }
 
     /**
@@ -76,7 +76,9 @@ public class Squad {
      * @return ‘false’ if an agent of serialNumber ‘serial’ is missing, and ‘true’ otherwise
      */
     public boolean getAgents(List<String> serials) {
+        serials.sort(Comparator.naturalOrder());
         for (String serial : serials) {
+            // System.out.println("SSSSSSSSSSSS getting agent with serial " + serial); TODO: clean this
             Agent agent = agents.get(serial);
             if (agent == null) {
                 releaseAgents(serials);
@@ -84,10 +86,19 @@ public class Squad {
             }
             else {
                 try {
-                    if (!agent.isAvailable()) wait();
-                } catch (InterruptedException ignored){
+                    // System.out.println("SSSSSSSSSSSS trying to sync on squad"); TODO: clean this
+                    synchronized (this) {
+                        // System.out.println("SSSSSSSSSSSS synced on squad");TODO: clean this
+                        while (!agent.isAvailable()){
+                            // System.out.println("SSSSSSSSSSSS waiting for agent with serial " + serial + " to be available"); TODO: clean this
+                            wait();
+                        }
+                        // System.out.println("SSSSSSSSSSSS acquiring agent with serial " + serial); TODO: clean this
+                        agent.acquire();
+                    }
+                } catch (InterruptedException ignored) {
+                    System.out.println("Waiting for agents interrupted");
                 }
-                agent.acquire();
             }
         }
         return true;

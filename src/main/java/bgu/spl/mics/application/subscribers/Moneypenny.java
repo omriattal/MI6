@@ -58,11 +58,12 @@ public class Moneypenny extends Subscriber {
 
     private void subscribeToAgentsAvailableEvent() {
         subscribeEvent(AgentsAvailableEvent.class, (event) -> {
+            // System.out.println("##### MP ##### Moneypenny: " + serialNumber + " Received AgentsAvailableEvent"); TODO: clean this
             List<String> agentsToCheck = event.getSerials();
             List<String> agentNames = squad.getAgentsNames(agentsToCheck);
+            // System.out.println("##### MP ##### Moneypenny: " + serialNumber + " Getting agents"); TODO: clean this
             boolean result = squad.getAgents(agentsToCheck);
             complete(event,new AgentsAvailableResult(serialNumber,result,agentNames));
-
         });
     }
 
