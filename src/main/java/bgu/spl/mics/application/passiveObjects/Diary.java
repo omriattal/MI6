@@ -1,6 +1,10 @@
 package bgu.spl.mics.application.passiveObjects;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Passive object representing the diary where all reports are stored.
@@ -12,7 +16,14 @@ import java.util.List;
  */
 public class Diary {
     private List<Report> reports;
-    private int total;
+    private ReadWriteLock reportsLock;
+    private AtomicInteger total;
+
+    private Diary() {
+        reports = new ArrayList<>();
+        total = new AtomicInteger(0);
+        reportsLock = new ReentrantReadWriteLock();
+    }
 
     /**
      * Retrieves the single instance of this class.
@@ -21,7 +32,14 @@ public class Diary {
         return Instance.instance;
     }
 
-    public List<Report> getReports() { return reports; }
+    public List<Report> getReports() {
+        reportsLock.readLock().lock();
+        try {
+            return reports;
+        } finally {
+            reportsLock.readLock().unlock();
+        }
+    }
 
     /**
      * adds a report to the diary
@@ -29,7 +47,12 @@ public class Diary {
      * @param reportToAdd - the report to add
      */
     public void addReport(Report reportToAdd) {
-        reports.add(reportToAdd);
+        reportsLock.writeLock().lock();
+        try {
+            reports.add(reportToAdd);
+        } finally {
+            reportsLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -48,13 +71,15 @@ public class Diary {
      * @return the total number of received missions (executed / aborted) be all the M-instances.
      */
     public int getTotal() {
-        return total;
+        return total.get();
     }
+
     /**
      * Increments the total number of received missions by 1
      */
-    public void incrementTotal(){
-        total++;
+    public void incrementTotal() {
+        //TODO: scream at Dasha if this doesn't work
+        total.incrementAndGet();
     }
 
     private static class Instance {

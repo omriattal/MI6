@@ -5,6 +5,7 @@ import bgu.spl.mics.application.messages.*;
 import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 import bgu.spl.mics.application.passiveObjects.Diary;
 import bgu.spl.mics.application.passiveObjects.MissionInfo;
+import bgu.spl.mics.application.passiveObjects.Report;
 
 import java.util.List;
 
@@ -37,7 +38,6 @@ public class M extends Subscriber {
     private void subscribeToMissionAvailableEvent() {
         subscribeEvent(MissionReceivedEvent.class, (event) -> {
             diary.incrementTotal();
-
             MissionInfo missionInfo = event.getMissionInfo();
             SimplePublisher publish = getSimplePublisher();
             List<String> serials = missionInfo.getSerialAgentsNumbers();
@@ -69,14 +69,34 @@ public class M extends Subscriber {
                 releaseAgents(publish, serials);
                 return;
             }
+            setCurrentTick(qResult.getSecond());
 
             Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials, missionDuration));
             if (agentsSentFuture == null) {
                 releaseAgents(publish, serials);
                 return;
             }
+
+            addReportToDiary(missionInfo, serials, agentsAvailableFuture, qResult);
+            diary.incrementTotal();
             complete(event, true);
         });
+    }
+
+    private void addReportToDiary(MissionInfo missionInfo, List<String> serials, Future<AgentsAvailableResult> agentsAvailableFuture, Pair<Boolean, Integer> qResult) {
+        Report missionReport = new Report();
+        AgentsAvailableResult agentsAvailableResult = agentsAvailableFuture.get();
+        missionReport.setAgentsNames(agentsAvailableResult.getAgentNames());
+        missionReport.setAgentsSerialNumbers(serials);
+        missionReport.setGadgetName(missionInfo.getGadget());
+        missionReport.setM(serialNumber);
+        missionReport.setMissionName(missionInfo.getMissionName());
+        missionReport.setMoneypenny(agentsAvailableResult.getMoneypenny());
+        missionReport.setQTime(qResult.getSecond());
+        missionReport.setTimeCreated(currentTick);
+        missionReport.setTimeIssued(missionReport.getTimeIssued());
+
+        diary.addReport(missionReport);
     }
 
     private void releaseAgents(SimplePublisher publish, List<String> serials) {
