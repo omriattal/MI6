@@ -1,9 +1,6 @@
 package bgu.spl.mics.application.passiveObjects;
 
 
-import bgu.spl.mics.application.subscribers.M;
-import bgu.spl.mics.application.subscribers.Moneypenny;
-
 import java.util.List;
 
 /**
@@ -14,14 +11,14 @@ import java.util.List;
  */
 public class Report {
     private String missionName;
-    private int mId;
-    private int moneypennyId;
-    private List<String> agentSerials;
-    private List<String> agentNames;
-    private String gadget;
-    private int qTime;
-    private int timeIssued;
+    private int m;
+    private int moneypenny;
+    private List<String> agentsSerialNumbers;
+    private List<String> agentsNames;
+    private String gadgetName;
     private int timeCreated;
+    private int timeIssued;
+    private int qTime;
 
     /**
      * Retrieves the mission name.
@@ -36,23 +33,23 @@ public class Report {
     /**
      * Retrieves the M's id.
      */
-    public int getM() {return mId;}
+    public int getM() {return m;}
 
     /**
      * Sets the M's id.
      */
-    public void setM(int m) {this.mId =m;}
+    public void setM(int m) {this.m =m;}
 
 
     /**
      * Retrieves the Moneypenny's id.
      */
-    public int getMoneypenny() {return moneypennyId; }
+    public int getMoneypenny() {return moneypenny; }
 
     /**
      * Sets the Moneypenny's id.
      */
-    public void setMoneypenny(int moneypenny) { this.moneypennyId = moneypenny; }
+    public void setMoneypenny(int moneypenny) { this.moneypenny = moneypenny; }
 
     /**
      * Retrieves the serial numbers of the agents.
@@ -60,12 +57,12 @@ public class Report {
      *
      * @return The serial numbers of the agents.
      */
-    public List<String> getAgentsSerialNumbers() { return agentSerials; }
+    public List<String> getAgentsSerialNumbers() { return agentsSerialNumbers; }
 
     /**
      * Sets the serial numbers of the agents.
      */
-    public void setAgentsSerialNumbers(List<String> agentsSerialNumbers) { this.agentSerials = agentsSerialNumbers; }
+    public void setAgentsSerialNumbers(List<String> agentsSerialNumbers) { this.agentsSerialNumbers = agentsSerialNumbers; }
 
     /**
      * Retrieves the agents names.
@@ -73,12 +70,12 @@ public class Report {
      *
      * @return The agents names.
      */
-    public List<String> getAgentsNames() { return agentNames; }
+    public List<String> getAgentsNames() { return agentsNames; }
 
     /**
      * Sets the agents names.
      */
-    public void setAgentsNames(List<String> agentsNames) { this.agentNames = agentsNames; }
+    public void setAgentsNames(List<String> agentsNames) { this.agentsNames = agentsNames; }
 
     /**
      * Retrieves the name of the gadget.
@@ -86,12 +83,12 @@ public class Report {
      *
      * @return the name of the gadget.
      */
-    public String getGadgetName() { return  gadget;}
+    public String getGadgetName() { return gadgetName;}
 
     /**
      * Sets the name of the gadget.
      */
-    public void setGadgetName(String gadgetName) { this.gadget = gadget; }
+    public void setGadgetName(String gadgetName) { this.gadgetName = this.gadgetName; }
 
     /**
      * Retrieves the time-tick in which Q Received the GadgetAvailableEvent for that mission.

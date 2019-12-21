@@ -1,7 +1,14 @@
 package bgu.spl.mics.application.passiveObjects;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -77,8 +84,16 @@ public class Inventory {
      * <p>
      */
     public void printToFile(String filename) {
-        Gson gson = new Gson();
-        String gson_string = gson.toJson(gadgets);
+        JsonArray gadgetsJson = new JsonArray();
+        for (String gadget : gadgets) {
+            gadgetsJson.add(gadget);
+        }
+        try {
+            Files.write(Paths.get(filename), gadgetsJson.toString().getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
 
     }
 }

@@ -29,11 +29,9 @@
         "missions": [
           {
             "agents": [
-              [
-                {
-                  "serialNumber": "007"
-                }
-              ],
+              {
+                "serialNumber": "006"
+              },
               {
                 "serialNumber": "007"
               }

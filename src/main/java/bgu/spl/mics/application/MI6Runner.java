@@ -2,10 +2,7 @@ package bgu.spl.mics.application;
 
 
 import bgu.spl.mics.Subscriber;
-import bgu.spl.mics.application.passiveObjects.Agent;
-import bgu.spl.mics.application.passiveObjects.Inventory;
-import bgu.spl.mics.application.passiveObjects.MissionInfo;
-import bgu.spl.mics.application.passiveObjects.Squad;
+import bgu.spl.mics.application.passiveObjects.*;
 import bgu.spl.mics.application.publishers.TimeService;
 import bgu.spl.mics.application.subscribers.Intelligence;
 import bgu.spl.mics.application.subscribers.M;
@@ -19,6 +16,7 @@ import com.google.gson.JsonParser;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -32,21 +30,31 @@ public class MI6Runner {
         JsonObject jsonObject = null;
         try {
             jsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
+            loadInventory(jsonObject);
+            loadSquad(jsonObject);
             List<Subscriber> subscribers = loadSubscribers(jsonObject);
-            List<Thread> threadList = new ArrayList<>();
+            List<Thread> threadsList = new ArrayList<>();
+
             Thread newThread;
             for (Subscriber subscriber : subscribers) {
                 newThread = new Thread(subscriber);
-                threadList.add(newThread);
+                threadsList.add(newThread);
                 newThread.start();
             }
 
-            confirmThreadsStarted(threadList);
+            confirmThreadsStarted(threadsList);
 
             TimeService timeService = createTimeService(jsonObject);
             Thread timeServiceThread = new Thread(timeService);
             timeServiceThread.start();
-        } catch (FileNotFoundException ignored) {
+
+            for (Thread thread : threadsList) {
+                thread.join();
+            }
+
+            Inventory.getInstance().printToFile(args[1]);
+            Diary.getInstance().printToFile(args[2]);
+        } catch (FileNotFoundException | InterruptedException ignored) {
         }
     }
 
@@ -64,12 +72,13 @@ public class MI6Runner {
     }
 
     private static void loadInventory(JsonObject jsonObject) {
-        JsonArray inventory = jsonObject.getAsJsonArray("Inventory");
+        JsonArray inventory = jsonObject.getAsJsonArray("inventory");
         String[] gadgets = new String[inventory.size()];
         int index = 0;
         for (JsonElement gadget : inventory) {
             String nameOfGadget = gadget.getAsJsonObject().get("name").getAsString();
             gadgets[index] = nameOfGadget;
+            index++;
         }
         Inventory.getInstance().load(gadgets);
     }
@@ -93,7 +102,7 @@ public class MI6Runner {
         JsonObject services = jsonObject.getAsJsonObject("services");
         int amountOfM = services.get("M").getAsInt();
         JsonArray intelligences = services.get("intelligence").getAsJsonArray();
-        int amountOfMoneyPenny = services.get("moneypenny").getAsInt();
+        int amountOfMoneyPenny = services.get("Moneypenny").getAsInt();
         List<Subscriber> subscribers = new ArrayList<>();
 
         loadMoneypennySubs(amountOfMoneyPenny, subscribers);
@@ -134,7 +143,7 @@ public class MI6Runner {
             missionInfo.setSerialAgentsNumbers(agentsSerials);
             missionInfo.setDuration(mission.get("duration").getAsInt());
             missionInfo.setGadget(mission.get("gadget").getAsString());
-            missionInfo.setMissionName(mission.get("missionName").getAsString());
+            missionInfo.setMissionName(mission.get("name").getAsString());
             missionInfo.setTimeExpired(mission.get("timeExpired").getAsInt());
             missionInfoList.add(missionInfo);
         }

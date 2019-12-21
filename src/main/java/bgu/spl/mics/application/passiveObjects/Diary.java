@@ -1,5 +1,11 @@
 package bgu.spl.mics.application.passiveObjects;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,7 +22,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class Diary {
     private List<Report> reports;
-    private ReadWriteLock reportsLock;
+    private transient ReadWriteLock reportsLock;
     private AtomicInteger total;
 
     private Diary() {
@@ -62,7 +68,14 @@ public class Diary {
      * This method is called by the main method in order to generate the output.
      */
     public void printToFile(String filename) {
-        //TODO: Implement this
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try {
+
+            String jsonOutput = gson.toJson(this);
+            Files.write(Paths.get(filename), jsonOutput.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
