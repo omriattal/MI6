@@ -32,20 +32,24 @@ public class  MI6Runner {
         JsonObject jsonObject = null;
         try{
             jsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
+            loadInventory(jsonObject);
+            loadSquad(jsonObject);
             List<Subscriber> subscribers = loadSubscribers(jsonObject);
 
         }
         catch (FileNotFoundException ignored) {}
     }
     private static void loadInventory(JsonObject jsonObject) {
-        JsonArray inventory = jsonObject.getAsJsonArray("Inventory");
+        JsonArray inventory = jsonObject.getAsJsonArray("inventory");
         String[] gadgets = new String[inventory.size()];
         int index = 0;
         for (JsonElement gadget: inventory) {
             String nameOfGadget = gadget.getAsJsonObject().get("name").getAsString();
             gadgets[index] = nameOfGadget;
+            index++;
         }
         Inventory.getInstance().load(gadgets);
+        System.out.println("loaded inventory");
     }
     private static void loadSquad(JsonObject jsonObject) {
         JsonArray squad = jsonObject.getAsJsonArray("squad");
@@ -60,13 +64,15 @@ public class  MI6Runner {
             index++;
         }
         Squad.getInstance().load(agents);
+        System.out.println("loaded squad");
+
     }
 
     private static List<Subscriber> loadSubscribers (JsonObject jsonObject) {
         JsonObject services = jsonObject.getAsJsonObject("services");
         int amountOfM = services.get("M").getAsInt();
         JsonArray intelligences = services.get("intelligence").getAsJsonArray();
-        int amountOfMoneyPenny = services.get("moneypenny").getAsInt();
+        int amountOfMoneyPenny = services.get("Moneypenny").getAsInt();
         List<Subscriber> subscribers = new ArrayList<>();
 
         loadMoneypennySubs(amountOfMoneyPenny, subscribers);
@@ -74,7 +80,6 @@ public class  MI6Runner {
         loadMSubs(amountOfM, subscribers);
 
         loadIntelligenceSubs(intelligences, subscribers);
-
         subscribers.add(new Q());
         return subscribers;
     }
@@ -93,6 +98,7 @@ public class  MI6Runner {
             subscribers.add(new Intelligence(intelId, missionInfoList));
             intelId++;
         }
+
     }
 
     static void populateMissionInfoList(List<MissionInfo> missionInfoList, JsonArray missions) {
@@ -107,7 +113,7 @@ public class  MI6Runner {
             missionInfo.setSerialAgentsNumbers(agentsSerials);
             missionInfo.setDuration(mission.get("duration").getAsInt());
             missionInfo.setGadget(mission.get("gadget").getAsString());
-            missionInfo.setMissionName(mission.get("missionName").getAsString());
+            missionInfo.setMissionName(mission.get("name").getAsString());
             missionInfo.setTimeExpired(mission.get("timeExpired").getAsInt());
             missionInfoList.add(missionInfo);
         }

@@ -75,6 +75,6 @@ public class Inventory {
      * <p>
      */
     public void printToFile(String filename) {
-        //TODO: Implement this
+
     }
 }
