@@ -9,16 +9,30 @@
         "007"
       ],
       "agentsNames": [
-        "Alec Trevelyan",
-        "James Bond"
+        "James Bond",
+        "Alec Trevelyan"
       ],
       "timeCreated": 3,
       "timeIssued": 3,
       "qTime": 3
     },
     {
+      "missionName": "From Russia With Love",
+      "m": 0,
+      "moneypenny": 0,
+      "agentsSerialNumbers": [
+        "007"
+      ],
+      "agentsNames": [
+        "James Bond"
+      ],
+      "timeCreated": 6,
+      "timeIssued": 6,
+      "qTime": 10
+    },
+    {
       "missionName": "The World Is Not Enough",
-      "m": 1,
+      "m": 0,
       "moneypenny": 0,
       "agentsSerialNumbers": [
         "006"
@@ -31,5 +45,5 @@
       "qTime": 16
     }
   ],
-  "total": 7
+  "total": 5
 }

@@ -72,12 +72,11 @@ public class M extends Subscriber {
             }
             ;
             Pair<Boolean, Integer> qResult = gadgetAvailableFuture.get();
-            if (qResult.getSecond() > missionInfo.getTimeExpired()) {
+            if (currentTick > missionInfo.getTimeExpired()) {
                 //System.out.println("@@@@@ M @@@@@ TIME EXPIRED mission was aborted. qTime: " + qResult.getSecond()); TODO: clean this
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;
             }
-            setCurrentTick(qResult.getSecond());
 
             Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials, missionDuration));
             if (agentsSentFuture == null) {
@@ -88,7 +87,6 @@ public class M extends Subscriber {
             }
 
             addReportToDiary(missionInfo, serials, agentsAvailableFuture, qResult);
-            diary.incrementTotal();
             complete(event, true);
             //System.out.println("@@@@@ M @@@@@ Mission completed " + missionInfo.getMissionName()); TODO: clean this
         });
