@@ -28,7 +28,5 @@ hs_err_pid*
 .idea/
 MI6.iml
 
+target/
 src/main/java/bgu/spl/mics/.DS_Store
-target/classes/META-INF/
-target/generated-sources/
-target/generated-test-sources/
