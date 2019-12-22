@@ -2,8 +2,8 @@
   "reports": [
     {
       "missionName": "pistol mission",
-      "m": 7,
-      "moneypenny": 28,
+      "m": 9,
+      "moneypenny": 46,
       "agentsSerialNumbers": [
         "006",
         "007"
@@ -17,9 +17,23 @@
       "qTime": 3
     },
     {
+      "missionName": "From Russia With Love",
+      "m": 4,
+      "moneypenny": 28,
+      "agentsSerialNumbers": [
+        "007"
+      ],
+      "agentsNames": [
+        "James Bond"
+      ],
+      "timeCreated": 6,
+      "timeIssued": 6,
+      "qTime": 9
+    },
+    {
       "missionName": "test Mission 1 of intel 3",
-      "m": 8,
-      "moneypenny": 48,
+      "m": 12,
+      "moneypenny": 30,
       "agentsSerialNumbers": [
         "006",
         "008"
@@ -33,23 +47,9 @@
       "qTime": 9
     },
     {
-      "missionName": "From Russia With Love",
-      "m": 3,
-      "moneypenny": 36,
-      "agentsSerialNumbers": [
-        "007"
-      ],
-      "agentsNames": [
-        "James Bond"
-      ],
-      "timeCreated": 6,
-      "timeIssued": 6,
-      "qTime": 9
-    },
-    {
       "missionName": "All agents Mission 2",
-      "m": 5,
-      "moneypenny": 20,
+      "m": 1,
+      "moneypenny": 26,
       "agentsSerialNumbers": [
         "006",
         "007",
@@ -72,8 +72,8 @@
     },
     {
       "missionName": "tv mission",
-      "m": 12,
-      "moneypenny": 62,
+      "m": 15,
+      "moneypenny": 6,
       "agentsSerialNumbers": [
         "009",
         "010"
@@ -88,8 +88,8 @@
     },
     {
       "missionName": "The World Is Not Enough",
-      "m": 6,
-      "moneypenny": 14,
+      "m": 10,
+      "moneypenny": 22,
       "agentsSerialNumbers": [
         "006"
       ],
@@ -102,8 +102,8 @@
     },
     {
       "missionName": "All agents Mission",
-      "m": 10,
-      "moneypenny": 2,
+      "m": 13,
+      "moneypenny": 52,
       "agentsSerialNumbers": [
         "006",
         "007",
@@ -126,8 +126,8 @@
     },
     {
       "missionName": "Thunderball",
-      "m": 2,
-      "moneypenny": 4,
+      "m": 7,
+      "moneypenny": 2,
       "agentsSerialNumbers": [
         "006",
         "007"
@@ -138,7 +138,7 @@
       ],
       "timeCreated": 3,
       "timeIssued": 3,
-      "qTime": 45
+      "qTime": 44
     }
   ],
   "total": 10
