@@ -48,10 +48,13 @@ public class Squad {
     public void releaseAgents(List<String> serials) {
         for (String serial : serials) {
             Agent agent = agents.get(serial);
-            if (agent != null) agent.release();
-        }
-        synchronized (this) {
-            notifyAll();
+            if (agent != null) {
+                agent.release();
+                //TODO: make sure this lock works
+                synchronized (agent) {
+                    agent.notifyAll();
+                }
+            }
         }
     }
 
@@ -78,27 +81,20 @@ public class Squad {
     public boolean getAgents(List<String> serials) {
         serials.sort(Comparator.naturalOrder());
         for (String serial : serials) {
-            // System.out.println("SSSSSSSSSSSS getting agent with serial " + serial); TODO: clean this
             Agent agent = agents.get(serial);
             if (agent == null) {
                 releaseAgents(serials);
                 return false;
             }
-            else {
+            //TODO: make sure this lock works
+            synchronized (agent) {
                 try {
-                    // System.out.println("SSSSSSSSSSSS trying to sync on squad"); TODO: clean this
-                    synchronized (this) {
-                        // System.out.println("SSSSSSSSSSSS synced on squad");TODO: clean this
-                        while (!agent.isAvailable()){
-                            // System.out.println("SSSSSSSSSSSS waiting for agent with serial " + serial + " to be available"); TODO: clean this
-                            wait();
-                        }
-                        // System.out.println("SSSSSSSSSSSS acquiring agent with serial " + serial); TODO: clean this
-                        agent.acquire();
+                    while (!agent.isAvailable()) {
+                        agent.wait();
                     }
                 } catch (InterruptedException ignored) {
-                    System.out.println("Waiting for agents interrupted");
                 }
+                agent.acquire();
             }
         }
         return true;

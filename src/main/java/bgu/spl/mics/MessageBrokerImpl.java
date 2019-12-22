@@ -9,7 +9,7 @@ import java.util.concurrent.*;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBrokerImpl implements MessageBroker {
-    private ConcurrentHashMap<Subscriber, Pair<Semaphore, BlockingQueue<Message>>> subscriberMap;
+    private ConcurrentHashMap<Subscriber, BlockingQueue<Message>> subscriberMap;
     private ConcurrentHashMap<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> topicMap;
     private ConcurrentHashMap<Event, Future> eventMap;
     private Semaphore topicMapLock;
@@ -49,6 +49,7 @@ public class MessageBrokerImpl implements MessageBroker {
         } finally {
             topicMapLock.release();
         }
+
         try {
             getTopicQueue(type).add(m);
         } finally {
@@ -133,8 +134,8 @@ public class MessageBrokerImpl implements MessageBroker {
 
     @Override
     public void register(Subscriber m) {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = new Pair<>(new Semaphore(1, true), new LinkedBlockingQueue<>());
-        subscriberMap.putIfAbsent(m, subPair);
+        BlockingQueue<Message> subQueue = new LinkedBlockingQueue<>();
+        subscriberMap.putIfAbsent(m, subQueue);
     }
 
     @Override
@@ -143,12 +144,12 @@ public class MessageBrokerImpl implements MessageBroker {
         try {
             if (subscriberMap.containsKey(m)) {
                 removeFromTopicMap(m);
-                completeAllEventsOfSubscriberAsNull(m);
-                subscriberMap.remove(m);
             }
         } finally {
             topicMapLock.release();
         }
+        completeAllEventsOfSubscriberAsNull(m);
+        subscriberMap.remove(m);
     }
 
     private void completeAllEventsOfSubscriberAsNull(Subscriber m) {
@@ -178,8 +179,7 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     private BlockingQueue<Message> getSubQueue(Subscriber m) {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
-        return subPair.getSecond();
+        return subscriberMap.get(m);
     }
 
     private static class Instance {

@@ -8,13 +8,12 @@ import bgu.spl.mics.application.subscribers.Intelligence;
 import bgu.spl.mics.application.subscribers.M;
 import bgu.spl.mics.application.subscribers.Moneypenny;
 import bgu.spl.mics.application.subscribers.Q;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +26,7 @@ public class MI6Runner {
     public static void main(String[] args) {
         // String filePath = args[0];
         // JsonObject jsonObject;
-        try {
+        try (Reader reader = new FileReader(args[0])){
             // jsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
             // loadInventory(jsonObject);
             // loadSquad(jsonObject);
@@ -56,7 +55,7 @@ public class MI6Runner {
 
             Inventory.getInstance().printToFile(args[1]);
             Diary.getInstance().printToFile(args[2]);
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException | IOException ignored) {
         }
     }
 
