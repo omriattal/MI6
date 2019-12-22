@@ -84,13 +84,13 @@ public class AppInputJsonParser {
 
         createMSubs(amountOfM, subscribers);
 
-        createIntelligence(intelligences);
+        createIntelligence(intelligences, subscribers);
 
         subscribers.add(new Q());
         return subscribers;
     }
 
-    private void createIntelligence(JsonArray intelligences) {
+    private void createIntelligence(JsonArray intelligences, List<Subscriber> subscribers) {
         List<MissionInfo> missionInfoList;
         MissionInfo missionInfo;
         JsonArray missions;
