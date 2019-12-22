@@ -42,45 +42,37 @@ public class M extends Subscriber {
             SimplePublisher publish = getSimplePublisher();
             List<String> serials = missionInfo.getSerialAgentsNumbers();
             int missionDuration = missionInfo.getDuration();
-            // System.out.println("@@@@@ M @@@@@ Mission received. M: " + serialNumber + ", Mission name: " + missionInfo.getMissionName()); TODO: clean this
 
             Future<AgentsAvailableResult> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
-            // System.out.println("@@@@@ M @@@@@ Trying to get AgentsAvailable");
             if (agentsAvailableFuture == null || agentsAvailableFuture.get() == null) {
-                //System.out.println("@@@@@ M @@@@@ No moneypenny to check availability");
                 MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
                 return;
             }
             if (!agentsAvailableFuture.get().getResult()) {
-                //System.out.println("@@@@@ M @@@@@ Agents not available for mission " + missionInfo.getMissionName()); TODO: clean this
                 return;
             }
 
             Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
-            // System.out.println("@@@@@ M @@@@@ trying to get GadgetsAvailable"); TODO: clean this
+
             if (gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null) {
-                //System.out.println("@@@@@ M @@@@@ No Q available"); TODO: clean this
                 MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
                 return;
             }
             if (!gadgetAvailableFuture.get().getFirst()) {
-                //System.out.println("@@@@@ M @@@@@ Gadget not available for mission " + missionInfo.getMissionName()); TODO: clean this
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;
             }
-            ;
+
             Pair<Boolean, Integer> qResult = gadgetAvailableFuture.get();
             if (currentTick > missionInfo.getTimeExpired()) {
-                //System.out.println("@@@@@ M @@@@@ TIME EXPIRED mission was aborted. qTime: " + qResult.getSecond()); TODO: clean this
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;
             }
 
             Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials, missionDuration));
             if (agentsSentFuture == null) {
-                //System.out.println("@@@@@ M @@@@@ No moneypenny to send agents"); TODO: clean this
                 MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
                 return;
@@ -88,7 +80,6 @@ public class M extends Subscriber {
 
             addReportToDiary(missionInfo, serials, agentsAvailableFuture, qResult);
             complete(event, true);
-            //System.out.println("@@@@@ M @@@@@ Mission completed " + missionInfo.getMissionName()); TODO: clean this
         });
     }
 
@@ -102,7 +93,7 @@ public class M extends Subscriber {
         missionReport.setMissionName(missionInfo.getMissionName());
         missionReport.setMoneypenny(agentsAvailableResult.getMoneypenny());
         missionReport.setQTime(qResult.getSecond());
-        missionReport.setTimeCreated(currentTick);
+        missionReport.setTimeCreated(currentTick + missionInfo.getDuration());
         missionReport.setTimeIssued(missionInfo.getTimeIssued());
 
         diary.addReport(missionReport);
