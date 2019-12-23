@@ -30,7 +30,7 @@ public class SquadTest {
         Agent[] agents = {agent1, agent2, agent3};
         List<String> agentList = new ArrayList<>();
         for (Agent agent : agents) {
-            agentList.add(agent.getName());
+            agentList.add(agent.getSerialNumber());
         }
         squad.load(agents);
         assertTrue(squad.getAgents(agentList));
@@ -44,17 +44,17 @@ public class SquadTest {
         agent1.setSerialNumber("omri");
         agent2.setSerialNumber("yaakov");
         agent3.setSerialNumber("vais");
-        Agent[] agents = {agent1, agent2, agent3};
+        Agent[] agents = {agent1, agent2};
         squad.load(agents);
         List<String> agentList1 = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            agentList1.add(agents[i].getName());
+            agentList1.add(agents[i].getSerialNumber());
         }
         List<String> agentList2 = new ArrayList<>();
         agentList2.add(agent3.getName());
-        squad.sendAgents(agentList1, 1000);
-        assertFalse(squad.getAgents(agentList1));
-        assertTrue(squad.getAgents(agentList2));
+        squad.sendAgents(agentList1, 7);
+        assertTrue(squad.getAgents(agentList1));
+        assertFalse(squad.getAgents(agentList2));
     }
 
 }

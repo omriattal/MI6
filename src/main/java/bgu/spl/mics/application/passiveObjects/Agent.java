@@ -12,7 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class Agent {
     private String name;
     private String serialNumber;
-    private boolean available;
+    private boolean available = true;
     private ReadWriteLock nameLock = new ReentrantReadWriteLock();
     private ReadWriteLock serialNumberLock = new ReentrantReadWriteLock();
     private ReadWriteLock availabilityLock = new ReentrantReadWriteLock(true);

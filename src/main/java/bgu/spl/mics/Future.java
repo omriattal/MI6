@@ -76,7 +76,7 @@ public class Future<T> {
      * @pre: {@param timeout >= 0} && {@param unit.instanceOf TimeUnit}
      * @post: isDone() ? timeout not passed : timeout passed
      */
-    public T get(long timeout, TimeUnit unit) {
+    public synchronized T get(long timeout, TimeUnit unit) {
         if (!isDone) {
             try {
                 wait(unit.toMillis(timeout));

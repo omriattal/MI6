@@ -2,8 +2,8 @@
   "reports": [
     {
       "missionName": "pistol mission",
-      "m": 65,
-      "moneypenny": 0,
+      "m": 12,
+      "moneypenny": 4,
       "agentsSerialNumbers": [
         "006",
         "007"
@@ -17,25 +17,9 @@
       "qTime": 3
     },
     {
-      "missionName": "Thunderball",
-      "m": 13,
-      "moneypenny": 0,
-      "agentsSerialNumbers": [
-        "006",
-        "007"
-      ],
-      "agentsNames": [
-        "Alec Trevelyan",
-        "James Bond"
-      ],
-      "timeCreated": 3,
-      "timeIssued": 3,
-      "qTime": 9
-    },
-    {
       "missionName": "test Mission 1 of intel 3",
-      "m": 8,
-      "moneypenny": 0,
+      "m": 0,
+      "moneypenny": 24,
       "agentsSerialNumbers": [
         "006",
         "008"
@@ -46,12 +30,12 @@
       ],
       "timeCreated": 5,
       "timeIssued": 5,
-      "qTime": 15
+      "qTime": 9
     },
     {
       "missionName": "From Russia With Love",
-      "m": 17,
-      "moneypenny": 0,
+      "m": 32,
+      "moneypenny": 12,
       "agentsSerialNumbers": [
         "007"
       ],
@@ -60,36 +44,12 @@
       ],
       "timeCreated": 6,
       "timeIssued": 6,
-      "qTime": 15
-    },
-    {
-      "missionName": "All agents Mission",
-      "m": 2,
-      "moneypenny": 0,
-      "agentsSerialNumbers": [
-        "006",
-        "007",
-        "008",
-        "009",
-        "010",
-        "011"
-      ],
-      "agentsNames": [
-        "James Bond",
-        "Alec Trevelyan",
-        "Nadav",
-        "Yossi",
-        "Gil",
-        "Iris"
-      ],
-      "timeCreated": 10,
-      "timeIssued": 10,
-      "qTime": 22
+      "qTime": 9
     },
     {
       "missionName": "All agents Mission 2",
-      "m": 22,
-      "moneypenny": 0,
+      "m": 43,
+      "moneypenny": 26,
       "agentsSerialNumbers": [
         "006",
         "007",
@@ -108,12 +68,12 @@
       ],
       "timeCreated": 12,
       "timeIssued": 12,
-      "qTime": 35
+      "qTime": 14
     },
     {
       "missionName": "The World Is Not Enough",
-      "m": 19,
-      "moneypenny": 0,
+      "m": 8,
+      "moneypenny": 34,
       "agentsSerialNumbers": [
         "006"
       ],
@@ -122,11 +82,11 @@
       ],
       "timeCreated": 16,
       "timeIssued": 16,
-      "qTime": 48
+      "qTime": 27
     },
     {
       "missionName": "tv mission",
-      "m": 24,
+      "m": 74,
       "moneypenny": 0,
       "agentsSerialNumbers": [
         "009",
@@ -138,7 +98,47 @@
       ],
       "timeCreated": 25,
       "timeIssued": 25,
-      "qTime": 48
+      "qTime": 27
+    },
+    {
+      "missionName": "All agents Mission",
+      "m": 55,
+      "moneypenny": 6,
+      "agentsSerialNumbers": [
+        "006",
+        "007",
+        "008",
+        "009",
+        "010",
+        "011"
+      ],
+      "agentsNames": [
+        "James Bond",
+        "Alec Trevelyan",
+        "Nadav",
+        "Yossi",
+        "Gil",
+        "Iris"
+      ],
+      "timeCreated": 10,
+      "timeIssued": 10,
+      "qTime": 32
+    },
+    {
+      "missionName": "Thunderball",
+      "m": 46,
+      "moneypenny": 32,
+      "agentsSerialNumbers": [
+        "006",
+        "007"
+      ],
+      "agentsNames": [
+        "Alec Trevelyan",
+        "James Bond"
+      ],
+      "timeCreated": 3,
+      "timeIssued": 3,
+      "qTime": 45
     }
   ],
   "total": 10

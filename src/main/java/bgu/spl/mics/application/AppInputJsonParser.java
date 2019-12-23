@@ -92,10 +92,7 @@ public class AppInputJsonParser {
 
     private void createIntelligence(JsonArray intelligences, List<Subscriber> subscribers) {
         List<MissionInfo> missionInfoList;
-        MissionInfo missionInfo;
         JsonArray missions;
-        JsonObject mission;
-        List<String> agentsSerials;
         int intelId = 0;
         for (JsonElement intelligence : intelligences) {
             missionInfoList = new ArrayList<>();
@@ -127,7 +124,6 @@ public class AppInputJsonParser {
             agent = new Agent();
             agent.setName(agentElement.getAsJsonObject().get("name").getAsString());
             agent.setSerialNumber(agentElement.getAsJsonObject().get("serialNumber").getAsString());
-            agent.release();
             agents[index] = agent;
             index++;
         }
