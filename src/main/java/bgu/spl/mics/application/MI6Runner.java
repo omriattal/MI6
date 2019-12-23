@@ -44,6 +44,9 @@ public class MI6Runner {
                 threadsList.add(newThread);
                 newThread.start();
             }
+
+            //Sleep to give time for all the threads to finish
+            // their init before we start the time service
             Thread.sleep(100);
 
             // TimeService timeService = createTimeService(jsonObject);

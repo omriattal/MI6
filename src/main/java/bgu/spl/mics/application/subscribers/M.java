@@ -93,7 +93,7 @@ public class M extends Subscriber {
         missionReport.setMissionName(missionInfo.getMissionName());
         missionReport.setMoneypenny(agentsAvailableResult.getMoneypenny());
         missionReport.setQTime(qResult.getSecond());
-        missionReport.setTimeCreated(currentTick + missionInfo.getDuration());
+        missionReport.setTimeCreated(currentTick);
         missionReport.setTimeIssued(missionInfo.getTimeIssued());
 
         diary.addReport(missionReport);
