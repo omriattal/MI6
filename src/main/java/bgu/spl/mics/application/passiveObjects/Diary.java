@@ -76,7 +76,6 @@ public class Diary {
      * Increments the total number of received missions by 1
      */
     public void incrementTotal() {
-        //TODO: scream at Dasha if this doesn't work
         int oldTotal;
         int newTotal;
         do{

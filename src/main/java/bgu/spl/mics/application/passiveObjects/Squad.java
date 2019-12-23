@@ -50,7 +50,6 @@ public class Squad {
             Agent agent = agents.get(serial);
             if (agent != null) {
                 agent.release();
-                //TODO: make sure this lock works
                 synchronized (agent) {
                     agent.notifyAll();
                 }
@@ -86,7 +85,6 @@ public class Squad {
                 releaseAgents(serials);
                 return false;
             }
-            //TODO: make sure this lock works
             synchronized (agent) {
                 try {
                     while (!agent.isAvailable()) {
