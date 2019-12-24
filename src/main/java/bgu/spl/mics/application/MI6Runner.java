@@ -38,6 +38,11 @@ public class MI6Runner {
             TimeService timeService = inputParser.getTimeService();
             Thread timeServiceThread = new Thread(timeService);
             timeServiceThread.start();
+            timeServiceThread.join();
+
+            for (Thread thread : threadsList) {
+                thread.interrupt();
+            }
 
             joinOtherRunningThreads(threadsList);
 

@@ -33,11 +33,8 @@ public class Future<T> {
      * @pre: none
      * @post: isDone()
      */
-    public synchronized T get() {
-        try {
-            while (!isDone()) wait();
-        } catch (InterruptedException ignored) {
-        }
+    public synchronized T get() throws InterruptedException {
+        while (!isDone()) wait();
         return result;
     }
 
@@ -76,12 +73,9 @@ public class Future<T> {
      * @pre: {@param timeout >= 0} && {@param unit.instanceOf TimeUnit}
      * @post: isDone() ? timeout not passed : timeout passed
      */
-    public synchronized T get(long timeout, TimeUnit unit) {
+    public synchronized T get(long timeout, TimeUnit unit) throws InterruptedException {
         if (!isDone) {
-            try {
-                wait(unit.toMillis(timeout));
-            } catch (InterruptedException ignored) {
-            }
+            wait(unit.toMillis(timeout));
         }
         return result;
     }

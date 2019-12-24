@@ -49,17 +49,11 @@ public class M extends Subscriber {
                 terminate();
                 return;
             }
-            if (!agentsAvailableFuture.get().getResult()) {
+            if (Thread.currentThread().isInterrupted() && !agentsAvailableFuture.get().getResult()) {
                 return;
             }
 
             Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
-
-            if (gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null) {
-                MessageBrokerImpl.getInstance().unregister(this);
-                terminate();
-                return;
-            }
             if (!gadgetAvailableFuture.get().getFirst()) {
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;
@@ -83,7 +77,7 @@ public class M extends Subscriber {
         });
     }
 
-    private void addReportToDiary(MissionInfo missionInfo, List<String> serials, Future<AgentsAvailableResult> agentsAvailableFuture, Pair<Boolean, Integer> qResult) {
+    private void addReportToDiary(MissionInfo missionInfo, List<String> serials, Future<AgentsAvailableResult> agentsAvailableFuture, Pair<Boolean, Integer> qResult) throws InterruptedException {
         Report missionReport = new Report();
         AgentsAvailableResult agentsAvailableResult = agentsAvailableFuture.get();
         missionReport.setAgentsNames(agentsAvailableResult.getAgentNames());

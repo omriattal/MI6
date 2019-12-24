@@ -32,16 +32,14 @@ public class TimeService extends Publisher {
     @Override
     public void run() {
         SimplePublisher publisher = getSimplePublisher();
-        while (currentTick < totalTicks) {
-            // System.out.println("Time Tick: " + currentTick + " will be sent sent"); TODO: clean this
-            publisher.sendBroadcast(new TickBroadcast(currentTick));
+        while (currentTick <= totalTicks) {
             try {
+                publisher.sendBroadcast(new TickBroadcast(currentTick));
                 Thread.sleep(100);
             } catch (InterruptedException ignored) {
             }
             currentTick++;
         }
-        publisher.sendBroadcast(new FinalTickBroadcast());
     }
 
 }
