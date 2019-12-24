@@ -39,7 +39,7 @@ public class TimeService extends Publisher {
                 Thread.sleep(100);
             } catch (InterruptedException ignored) {
             }
-            currentTick++;
+            currentTick++; 
         }
         publisher.sendBroadcast(new FinalTickBroadcast());
     }

@@ -9,6 +9,7 @@ import java.util.*;
  * You may add ONLY private fields and methods to this class.
  */
 public class Squad {
+
     private Map<String, Agent> agents;
 
     private Squad() {

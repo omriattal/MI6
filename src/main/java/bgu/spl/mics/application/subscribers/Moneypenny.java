@@ -10,6 +10,7 @@ import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 import bgu.spl.mics.application.passiveObjects.Squad;
 import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,12 +24,14 @@ public class Moneypenny extends Subscriber {
     int serialNumber;
     private Squad squad;
     private int currentTick;
+    private List<String> agentAcquiredSerials;
 
     public Moneypenny(int serialNumber) {
         super("Moneypenny");
         this.serialNumber = serialNumber;
         squad = Squad.getInstance();
         currentTick = 0;
+        agentAcquiredSerials = new ArrayList<>();
     }
 
     @Override
@@ -46,6 +49,7 @@ public class Moneypenny extends Subscriber {
 
     private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+            squad.releaseAgents(agentAcquiredSerials);
             MessageBrokerImpl.getInstance().unregister(this);
             terminate();
         });
@@ -61,6 +65,7 @@ public class Moneypenny extends Subscriber {
             List<String> agentsToCheck = event.getSerials();
             List<String> agentNames = squad.getAgentsNames(agentsToCheck);
             boolean result = squad.getAgents(agentsToCheck);
+            agentAcquiredSerials.addAll(event.getSerials());
             complete(event,new AgentsAvailableResult(serialNumber,result,agentNames));
         });
     }
