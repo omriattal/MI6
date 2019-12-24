@@ -40,6 +40,7 @@ public class TimeService extends Publisher {
             }
             currentTick++;
         }
+        publisher.sendBroadcast(new FinalTickBroadcast());
     }
 
 }

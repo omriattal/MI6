@@ -35,12 +35,20 @@ public class Moneypenny extends Subscriber {
     protected void initialize() {
         MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
+        subscribeToFinalTickBroadcast();
         if (serialNumber % 2 == 0) {
             subscribeToAgentsAvailableEvent();
         }
         else {
             subscribeToReleasingEvents();
         }
+    }
+
+    private void subscribeToFinalTickBroadcast() {
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+            MessageBrokerImpl.getInstance().unregister(this);
+            terminate();
+        });
     }
 
     private void subscribeToReleasingEvents() {
