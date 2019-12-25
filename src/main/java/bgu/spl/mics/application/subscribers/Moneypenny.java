@@ -3,9 +3,7 @@ package bgu.spl.mics.application.subscribers;
 import bgu.spl.mics.MessageBrokerImpl;
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.*;
-import bgu.spl.mics.application.passiveObjects.Agent;
-import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
-import bgu.spl.mics.application.passiveObjects.Squad;
+import bgu.spl.mics.application.passiveObjects.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Moneypenny extends Subscriber {
     int serialNumber;
     private Squad squad;
+    private List<String> agentsSerialsList;
     private int currentTick;
     private static final AtomicInteger moneypennyCounter = new AtomicInteger(0);
-    private static final Object moneypennyCounterLock = new Object();
 
     public Moneypenny(int serialNumber) {
         super("Moneypenny");
@@ -53,15 +51,15 @@ public class Moneypenny extends Subscriber {
             terminate();
             if (serialNumber % 2 == 0) {
                 moneypennyCounter.decrementAndGet();
-                synchronized (moneypennyCounterLock) {
-                    moneypennyCounterLock.notifyAll();
+                synchronized (moneypennyCounter) {
+                    moneypennyCounter.notifyAll();
                 }
             }
             else {
-                synchronized (moneypennyCounterLock) {
+                synchronized (moneypennyCounter) {
                     while (moneypennyCounter.get() > 0) {
                         releaseAllAgents();
-                        moneypennyCounterLock.wait();
+                        moneypennyCounter.wait();
                     }
                 }
             }
@@ -69,11 +67,13 @@ public class Moneypenny extends Subscriber {
     }
 
     private void releaseAllAgents() {
-        List<String> agentsNames = new ArrayList<>();
-        for (Map.Entry<String, Agent> agentEntry : squad.getAgentsMap().entrySet()) {
-            agentsNames.add(agentEntry.getKey());
+        if(agentsSerialsList == null) {
+            agentsSerialsList = new ArrayList<>();
+            for (Map.Entry<String, Agent> agentEntry : squad.getAgentsMap().entrySet()) {
+                agentsSerialsList.add(agentEntry.getKey());
+            }
         }
-        squad.releaseAgents(agentsNames);
+        squad.releaseAgents(agentsSerialsList);
     }
 
     private void subscribeToReleasingEvents() {
@@ -86,6 +86,9 @@ public class Moneypenny extends Subscriber {
             List<String> agentsToCheck = event.getSerials();
             List<String> agentNames = squad.getAgentsNames(agentsToCheck);
             boolean result = squad.getAgents(agentsToCheck);
+            synchronized (moneypennyCounter){
+                moneypennyCounter.notifyAll();
+            }
             complete(event, new AgentsAvailableResult(serialNumber, result, agentNames));
         });
     }
