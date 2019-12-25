@@ -44,41 +44,41 @@ public class M extends Subscriber {
             int missionDuration = missionInfo.getDuration();
 
             Future<AgentsAvailableResult> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
-            if (agentsAvailableFuture == null) {
+            if (agentsAvailableFuture == null || agentsAvailableFuture.get() == null) {
                 MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
                 return;
             }
-            if (agentsAvailableFuture.get() == null || !agentsAvailableFuture.get().getResult()) {
+            if (!agentsAvailableFuture.get().getResult()) {
                 return;
             }
 
             Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
-            if (gadgetAvailableFuture == null) {
+
+            if (gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null) {
                 MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
                 return;
             }
-            if (gadgetAvailableFuture.get() == null || !gadgetAvailableFuture.get().getFirst()) {
-                releaseAgents(publish, serials);
+            if (!gadgetAvailableFuture.get().getFirst()) {
+                publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;
             }
 
             Pair<Boolean, Integer> qResult = gadgetAvailableFuture.get();
-            if (qResult.getSecond() > missionInfo.getTimeExpired()) {
-                releaseAgents(publish, serials);
+            if (currentTick > missionInfo.getTimeExpired()) {
+                publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;
             }
-            setCurrentTick(qResult.getSecond());
 
             Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials, missionDuration));
             if (agentsSentFuture == null) {
-                releaseAgents(publish, serials);
+                MessageBrokerImpl.getInstance().unregister(this);
+                terminate();
                 return;
             }
 
             addReportToDiary(missionInfo, serials, agentsAvailableFuture, qResult);
-            diary.incrementTotal();
             complete(event, true);
         });
     }
@@ -94,16 +94,9 @@ public class M extends Subscriber {
         missionReport.setMoneypenny(agentsAvailableResult.getMoneypenny());
         missionReport.setQTime(qResult.getSecond());
         missionReport.setTimeCreated(currentTick);
-        missionReport.setTimeIssued(missionReport.getTimeIssued());
+        missionReport.setTimeIssued(missionInfo.getTimeIssued());
 
         diary.addReport(missionReport);
-    }
-
-    private void releaseAgents(SimplePublisher publish, List<String> serials) {
-        Future<Boolean> release = publish.sendEvent(new ReleaseAgentsEvent(serials));
-        while (release != null && release.get() == null) {
-            release = publish.sendEvent(new ReleaseAgentsEvent(serials));
-        }
     }
 
     private void subscribeToTimeTick() {
@@ -113,7 +106,7 @@ public class M extends Subscriber {
     }
 
     private void subscribeToFinalTickBroadcast() {
-        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
             MessageBrokerImpl.getInstance().unregister(this);
             terminate();
         });

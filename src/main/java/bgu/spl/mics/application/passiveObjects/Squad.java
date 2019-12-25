@@ -1,9 +1,6 @@
 package bgu.spl.mics.application.passiveObjects;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Passive data-object representing a information about an agent in MI6.
@@ -12,6 +9,7 @@ import java.util.Map;
  * You may add ONLY private fields and methods to this class.
  */
 public class Squad {
+
     private Map<String, Agent> agents;
 
     private Squad() {
@@ -51,7 +49,12 @@ public class Squad {
     public void releaseAgents(List<String> serials) {
         for (String serial : serials) {
             Agent agent = agents.get(serial);
-            if (agent != null) agent.release();
+            if (agent != null) {
+                agent.release();
+                synchronized (agent) {
+                    agent.notifyAll();
+                }
+            }
         }
     }
 
@@ -76,16 +79,19 @@ public class Squad {
      * @return ‘false’ if an agent of serialNumber ‘serial’ is missing, and ‘true’ otherwise
      */
     public boolean getAgents(List<String> serials) {
+        serials.sort(Comparator.naturalOrder());
         for (String serial : serials) {
             Agent agent = agents.get(serial);
             if (agent == null) {
                 releaseAgents(serials);
                 return false;
             }
-            else {
+            synchronized (agent) {
                 try {
-                    if (!agent.isAvailable()) wait();
-                } catch (InterruptedException ignored){
+                    while (!agent.isAvailable()) {
+                        agent.wait();
+                    }
+                } catch (InterruptedException ignored) {
                 }
                 agent.acquire();
             }

@@ -1,10 +1,14 @@
 package bgu.spl.mics.application.passiveObjects;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Passive object representing the diary where all reports are stored.
@@ -16,13 +20,11 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class Diary {
     private List<Report> reports;
-    private ReadWriteLock reportsLock;
     private AtomicInteger total;
 
     private Diary() {
         reports = new ArrayList<>();
         total = new AtomicInteger(0);
-        reportsLock = new ReentrantReadWriteLock();
     }
 
     /**
@@ -33,12 +35,7 @@ public class Diary {
     }
 
     public List<Report> getReports() {
-        reportsLock.readLock().lock();
-        try {
-            return reports;
-        } finally {
-            reportsLock.readLock().unlock();
-        }
+        return reports;
     }
 
     /**
@@ -46,13 +43,8 @@ public class Diary {
      *
      * @param reportToAdd - the report to add
      */
-    public void addReport(Report reportToAdd) {
-        reportsLock.writeLock().lock();
-        try {
-            reports.add(reportToAdd);
-        } finally {
-            reportsLock.writeLock().unlock();
-        }
+    public synchronized void addReport(Report reportToAdd) {
+        reports.add(reportToAdd);
     }
 
     /**
@@ -62,7 +54,13 @@ public class Diary {
      * This method is called by the main method in order to generate the output.
      */
     public void printToFile(String filename) {
-        //TODO: Implement this
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try {
+            String jsonOutput = gson.toJson(this);
+            Files.write(Paths.get(filename), jsonOutput.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -78,8 +76,12 @@ public class Diary {
      * Increments the total number of received missions by 1
      */
     public void incrementTotal() {
-        //TODO: scream at Dasha if this doesn't work
-        total.incrementAndGet();
+        int oldTotal;
+        int newTotal;
+        do{
+            oldTotal = total.get();
+            newTotal = oldTotal + 1;
+        } while(!total.compareAndSet(oldTotal, newTotal));
     }
 
     private static class Instance {

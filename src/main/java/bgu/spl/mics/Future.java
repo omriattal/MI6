@@ -1,4 +1,4 @@
-    package bgu.spl.mics;
+package bgu.spl.mics;
 
 import java.util.concurrent.TimeUnit;
 
@@ -36,7 +36,8 @@ public class Future<T> {
     public synchronized T get() {
         try {
             while (!isDone()) wait();
-        } catch (InterruptedException ignored) {}
+        } catch (InterruptedException ignored) {
+        }
         return result;
     }
 
@@ -74,11 +75,15 @@ public class Future<T> {
      * <p>
      * @pre: {@param timeout >= 0} && {@param unit.instanceOf TimeUnit}
      * @post: isDone() ? timeout not passed : timeout passed
-     * TODO: rewrite post condition.
      */
-    public T get(long timeout, TimeUnit unit) {
-        //TODO: implement this correctly
-        return null;
+    public synchronized T get(long timeout, TimeUnit unit) {
+        if (!isDone) {
+            try {
+                wait(unit.toMillis(timeout));
+            } catch (InterruptedException ignored) {
+            }
+        }
+        return result;
     }
 
 }

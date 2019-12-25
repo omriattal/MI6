@@ -9,7 +9,7 @@ import java.util.concurrent.*;
  * Only private fields and methods can be added to this class.
  */
 public class MessageBrokerImpl implements MessageBroker {
-    private ConcurrentHashMap<Subscriber, Pair<Semaphore, BlockingQueue<Message>>> subscriberMap;
+    private ConcurrentHashMap<Subscriber, BlockingQueue<Message>> subscriberMap;
     private ConcurrentHashMap<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> topicMap;
     private ConcurrentHashMap<Event, Future> eventMap;
     private Semaphore topicMapLock;
@@ -49,6 +49,7 @@ public class MessageBrokerImpl implements MessageBroker {
         } finally {
             topicMapLock.release();
         }
+
         try {
             getTopicQueue(type).add(m);
         } finally {
@@ -128,21 +129,13 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     private void addToSubQueue(Message b, Subscriber subscriber) throws InterruptedException {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(subscriber);
-        Semaphore subSemaphore = subPair.getFirst();
-
-        subSemaphore.acquire();
-        try {
-            getSubQueue(subscriber).put(b);
-        } finally {
-            subSemaphore.release();
-        }
+        getSubQueue(subscriber).put(b);
     }
 
     @Override
     public void register(Subscriber m) {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = new Pair<>(new Semaphore(1, true), new LinkedBlockingQueue<>());
-        subscriberMap.putIfAbsent(m, subPair);
+        BlockingQueue<Message> subQueue = new LinkedBlockingQueue<>();
+        subscriberMap.putIfAbsent(m, subQueue);
     }
 
     @Override
@@ -151,17 +144,17 @@ public class MessageBrokerImpl implements MessageBroker {
         try {
             if (subscriberMap.containsKey(m)) {
                 removeFromTopicMap(m);
-                completeAllEventsOfSubscriberAsNull(m);
-                subscriberMap.remove(m);
             }
         } finally {
             topicMapLock.release();
         }
+        completeAllEventsOfSubscriberAsNull(m);
+        subscriberMap.remove(m);
     }
 
     private void completeAllEventsOfSubscriberAsNull(Subscriber m) {
-        for(Message message: getSubQueue(m)){
-            if(message instanceof Event){
+        for (Message message : getSubQueue(m)) {
+            if (message instanceof Event) {
                 complete((Event) message, null);
             }
         }
@@ -182,20 +175,11 @@ public class MessageBrokerImpl implements MessageBroker {
             throw new IllegalStateException("No such Subscriber registered: " + m.getName());
         }
 
-        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
-        Semaphore subSemaphore = subPair.getFirst();
-
-        subSemaphore.acquire();
-        try {
-            return getSubQueue(m).take();
-        } finally {
-            subSemaphore.release();
-        }
+        return getSubQueue(m).take();
     }
 
     private BlockingQueue<Message> getSubQueue(Subscriber m) {
-        Pair<Semaphore, BlockingQueue<Message>> subPair = subscriberMap.get(m);
-        return subPair.getSecond();
+        return subscriberMap.get(m);
     }
 
     private static class Instance {
