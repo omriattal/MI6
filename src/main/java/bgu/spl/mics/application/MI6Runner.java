@@ -9,6 +9,7 @@ import bgu.spl.mics.application.publishers.TimeService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * This is the Main class of the application. You should parse the input file,
@@ -16,6 +17,8 @@ import java.util.List;
  * In the end, you should output serialized objects.
  */
 public class MI6Runner {
+    public static CountDownLatch latch = null;
+
     public static void main(String[] args) {
         try {
             AppInputJsonParser inputParser = new AppInputJsonParser(args[0]);
@@ -24,6 +27,7 @@ public class MI6Runner {
             List<Subscriber> subscribers = inputParser.getSubscribers();
             List<Thread> threadsList = new ArrayList<>();
 
+            latch = new CountDownLatch(subscribers.size());
             Thread newThread;
             for (Subscriber subscriber : subscribers) {
                 newThread = new Thread(subscriber);
@@ -31,9 +35,7 @@ public class MI6Runner {
                 newThread.start();
             }
 
-            //Sleep to give time for all the threads to finish
-            //their init before we start the time service
-            Thread.sleep(100);
+            latch.await();
 
             TimeService timeService = inputParser.getTimeService();
             Thread timeServiceThread = new Thread(timeService);

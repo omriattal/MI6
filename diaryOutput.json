@@ -1,7 +1,7 @@
 {
   "reports": [
     {
-      "missionName": "Land of Riches",
+      "name": "Land of Riches",
       "m": 0,
       "moneypenny": 0,
       "agentsSerialNumbers": [
@@ -15,7 +15,7 @@
       "qTime": 2
     },
     {
-      "missionName": "Thunderball",
+      "name": "Thunderball",
       "m": 1,
       "moneypenny": 0,
       "agentsSerialNumbers": [

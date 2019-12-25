@@ -26,7 +26,6 @@ public class Q extends Subscriber {
 
     @Override
     protected void initialize() {
-        MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
         subscribeToGadgetAvailableEvent();
@@ -34,7 +33,6 @@ public class Q extends Subscriber {
 
     private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
-            MessageBrokerImpl.getInstance().unregister(this);
             terminate();
         });
     }
