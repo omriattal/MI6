@@ -62,9 +62,10 @@ public class Squad {
      *
      * @param time time ticks to sleep
      */
-    public void sendAgents(List<String> serials, int time) throws InterruptedException {
+    public void sendAgents(List<String> serials, int time) {
         try {
             Thread.sleep(time * 100);
+        } catch (InterruptedException ignored) {
         } finally {
             releaseAgents(serials);
         }
@@ -77,7 +78,7 @@ public class Squad {
      * @param serials the serial numbers of the agents
      * @return ‘false’ if an agent of serialNumber ‘serial’ is missing, and ‘true’ otherwise
      */
-    public boolean getAgents(List<String> serials) throws InterruptedException {
+    public boolean getAgents(List<String> serials) {
         serials.sort(Comparator.naturalOrder());
         for (String serial : serials) {
             Agent agent = agents.get(serial);
@@ -87,7 +88,10 @@ public class Squad {
             }
             synchronized (agent) {
                 while (!agent.isAvailable()) {
-                    agent.wait();
+                    try {
+                        agent.wait();
+                    } catch (InterruptedException ignored) {
+                    }
                 }
                 agent.acquire();
             }
@@ -107,6 +111,10 @@ public class Squad {
             names.add(agents.get(serial).getName());
         }
         return names;
+    }
+
+    public Map<String, Agent> getAgentsMap() {
+        return agents;
     }
 
     private static class Instance {

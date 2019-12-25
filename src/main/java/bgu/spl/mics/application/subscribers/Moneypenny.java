@@ -2,15 +2,15 @@ package bgu.spl.mics.application.subscribers;
 
 import bgu.spl.mics.MessageBrokerImpl;
 import bgu.spl.mics.Subscriber;
-import bgu.spl.mics.application.messages.AgentsAvailableEvent;
-import bgu.spl.mics.application.messages.ReleaseAgentsEvent;
-import bgu.spl.mics.application.messages.SendAgentsEvent;
-import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.messages.*;
+import bgu.spl.mics.application.passiveObjects.Agent;
 import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 import bgu.spl.mics.application.passiveObjects.Squad;
-import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Only this type of Subscriber can access the squad.
@@ -23,6 +23,8 @@ public class Moneypenny extends Subscriber {
     int serialNumber;
     private Squad squad;
     private int currentTick;
+    private static final AtomicInteger moneypennyCounter = new AtomicInteger(0);
+    private static final Object moneypennyCounterLock = new Object();
 
     public Moneypenny(int serialNumber) {
         super("Moneypenny");
@@ -38,6 +40,7 @@ public class Moneypenny extends Subscriber {
         subscribeToFinalTickBroadcast();
         if (serialNumber % 2 == 0) {
             subscribeToAgentsAvailableEvent();
+            moneypennyCounter.incrementAndGet();
         }
         else {
             subscribeToReleasingEvents();
@@ -45,10 +48,32 @@ public class Moneypenny extends Subscriber {
     }
 
     private void subscribeToFinalTickBroadcast() {
-        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
             MessageBrokerImpl.getInstance().unregister(this);
             terminate();
+            if (serialNumber % 2 == 0) {
+                moneypennyCounter.decrementAndGet();
+                synchronized (moneypennyCounterLock) {
+                    moneypennyCounterLock.notifyAll();
+                }
+            }
+            else {
+                synchronized (moneypennyCounterLock) {
+                    while (moneypennyCounter.get() > 0) {
+                        releaseAllAgents();
+                        moneypennyCounterLock.wait();
+                    }
+                }
+            }
         });
+    }
+
+    private void releaseAllAgents() {
+        List<String> agentsNames = new ArrayList<>();
+        for (Map.Entry<String, Agent> agentEntry : squad.getAgentsMap().entrySet()) {
+            agentsNames.add(agentEntry.getKey());
+        }
+        squad.releaseAgents(agentsNames);
     }
 
     private void subscribeToReleasingEvents() {
@@ -61,7 +86,7 @@ public class Moneypenny extends Subscriber {
             List<String> agentsToCheck = event.getSerials();
             List<String> agentNames = squad.getAgentsNames(agentsToCheck);
             boolean result = squad.getAgents(agentsToCheck);
-            complete(event,new AgentsAvailableResult(serialNumber,result,agentNames));
+            complete(event, new AgentsAvailableResult(serialNumber, result, agentNames));
         });
     }
 
@@ -82,7 +107,7 @@ public class Moneypenny extends Subscriber {
     }
 
     private void subscribeToTimeTick() {
-        subscribeBroadcast(TickBroadcast.class, (broadcast)->{
+        subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
             setCurrentTick(broadcast.getTimeTick());
         });
     }

@@ -5,9 +5,11 @@
       "m": 0,
       "moneypenny": 0,
       "agentsSerialNumbers": [
+        "006",
         "007"
       ],
       "agentsNames": [
+        "Alec Trevelyan",
         "James Bond"
       ],
       "timeCreated": 3,
@@ -15,5 +17,5 @@
       "qTime": 3
     }
   ],
-  "total": 2
+  "total": 3
 }

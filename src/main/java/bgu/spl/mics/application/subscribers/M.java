@@ -49,11 +49,16 @@ public class M extends Subscriber {
                 terminate();
                 return;
             }
-            if (Thread.currentThread().isInterrupted() && !agentsAvailableFuture.get().getResult()) {
+            if (!agentsAvailableFuture.get().getResult()) {
                 return;
             }
 
             Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
+            if(gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null){
+                MessageBrokerImpl.getInstance().unregister(this);
+                terminate();
+                return;
+            }
             if (!gadgetAvailableFuture.get().getFirst()) {
                 publish.sendEvent(new ReleaseAgentsEvent(serials));
                 return;

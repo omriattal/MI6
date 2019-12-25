@@ -25,8 +25,12 @@ public final class SimplePublisher {
      * subscriber processing this event.
      * null in case no Subscriber has subscribed to {@code e.getClass()}.
      */
-    public final <T> Future<T> sendEvent(Event<T> e) throws InterruptedException {
-        return messageBroker.sendEvent(e);
+    public final <T> Future<T> sendEvent(Event<T> e) {
+        try {
+            return messageBroker.sendEvent(e);
+        } catch (InterruptedException ignored) {
+        }
+        return null;
     }
 
     /**
@@ -36,7 +40,10 @@ public final class SimplePublisher {
      *
      * @param b The broadcast message to send
      */
-    public final void sendBroadcast(Broadcast b) throws InterruptedException {
-        messageBroker.sendBroadcast(b);
+    public final void sendBroadcast(Broadcast b) {
+        try {
+            messageBroker.sendBroadcast(b);
+        } catch (InterruptedException ignored) {
+        }
     }
 }

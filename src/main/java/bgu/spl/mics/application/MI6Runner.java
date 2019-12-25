@@ -32,17 +32,12 @@ public class MI6Runner {
             }
 
             //Sleep to give time for all the threads to finish
-            // their init before we start the time service
+            //their init before we start the time service
             Thread.sleep(100);
 
             TimeService timeService = inputParser.getTimeService();
             Thread timeServiceThread = new Thread(timeService);
             timeServiceThread.start();
-            timeServiceThread.join();
-
-            for (Thread thread : threadsList) {
-                thread.interrupt();
-            }
 
             joinOtherRunningThreads(threadsList);
 
