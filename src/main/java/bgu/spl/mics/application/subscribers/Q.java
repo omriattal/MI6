@@ -47,9 +47,13 @@ public class Q extends Subscriber {
         this.currentTick = currentTick;
     }
 
+    /**
+     * Subscribes itself to the {@code GadgetAvailableEvent}.
+     * Checks the availability of the {@code gadget} in the {@code Inventory}.
+     */
     private void subscribeToGadgetAvailableEvent() {
         subscribeEvent(GadgetAvailableEvent.class, (event) -> {
-            boolean answer = Inventory.getInstance().getItem(event.getGadget()); //checks availability of the gadget.
+            boolean answer = Inventory.getInstance().getItem(event.getGadget());
             Pair<Boolean, Integer> result = new Pair<>(answer, currentTick);
             complete(event, result);
         });

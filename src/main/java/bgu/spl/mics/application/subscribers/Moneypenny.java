@@ -22,6 +22,10 @@ public class Moneypenny extends Subscriber {
     private Squad squad;
     private List<String> agentsSerialsList;
     private int currentTick;
+    /**
+     * @Brief A private field that counts the number of moneypennys with an even {@code serialNumber}.
+     * If the counter
+     */
     private static final AtomicInteger moneypennyCounter = new AtomicInteger(0);
 
     public Moneypenny(int serialNumber) {
@@ -32,6 +36,11 @@ public class Moneypenny extends Subscriber {
     }
 
     @Override
+    /**
+     * Subscribes itself to the {@code timeTickBroadcast and FinalTickBroadcast}.
+     * If the {@code serialNumber} is even - subscribes itself only to {@code AgentAvailableEvent}.
+     * If not - subscribes itself to {@code SendAgentsEvent and ReleaseAgentEvent}.
+     */
     protected void initialize() {
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
@@ -43,6 +52,12 @@ public class Moneypenny extends Subscriber {
         }
     }
 
+    /**
+     * Subscribes itself to {@code FinalTickBroadcast}.
+     * if the {@code serialNumber} is even - decrements the {@code moneypennycounter} and notify other "releasing" {@code Moneypenny}.
+     * else - if the {@code moneypennycounter > 0} - means there are more "AgentAvailable" {@code Moneypennys}  releases all {@code agents}
+     * and waits.
+     */
     private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
             terminate();
