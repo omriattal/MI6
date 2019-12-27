@@ -54,7 +54,6 @@ public class Intelligence extends Subscriber {
             if (!missionInfoList.isEmpty()) {
                 MissionInfo missionInfo = missionInfoList.get(0);
                 if (currentTick == missionInfo.getTimeIssued()) {
-//                    System.out.println("-------------- intel " + serialNumber + " sending mission: " + missionInfo.getMissionName());TODO: delete
                     publisher.sendEvent(new MissionReceivedEvent<>(missionInfo));
                     missionInfoList.remove(missionInfo);
                 }

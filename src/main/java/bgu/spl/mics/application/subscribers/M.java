@@ -20,7 +20,6 @@ public class M extends Subscriber {
     int serialNumber;
     private int currentTick;
 
-    //TODO: Refactor and update diary.
     public M(int serialNumber) {
         super("M");
         this.serialNumber = serialNumber;

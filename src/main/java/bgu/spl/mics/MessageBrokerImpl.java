@@ -197,10 +197,4 @@ public class MessageBrokerImpl implements MessageBroker {
         private static MessageBroker instance = new MessageBrokerImpl();
     }
 
-    //TODO: delete this
-    public void clear(){
-        subscriberMap.clear();
-        topicMap.clear();
-        eventMap.clear();
-    }
 }

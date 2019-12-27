@@ -80,9 +80,7 @@ public class Moneypenny extends Subscriber {
     private void subscribeToAgentsAvailableEvent() {
         subscribeEvent(AgentsAvailableEvent.class, (event) -> {
             List<String> agentsToGet = event.getSerials();
-//            System.out.println("@@@@@ MP @@@@@ moneypenny: " + serialNumber + " getting agents " + agentsToGet); //TODO: delete
             List<String> agentNames = squad.getAgentsNames(agentsToGet);
-//            System.out.println("@@@@@ MP @@@@@ moneypenny: " + serialNumber + " got agents " + agentsToGet); //TODO: delete
             boolean result = squad.getAgents(agentsToGet);
             synchronized (moneypennyCounter) {
                 moneypennyCounter.notifyAll();
