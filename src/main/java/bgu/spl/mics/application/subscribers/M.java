@@ -29,7 +29,6 @@ public class M extends Subscriber {
 
     @Override
     protected void initialize() {
-        MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
         subscribeToMissionAvailableEvent();
@@ -45,7 +44,6 @@ public class M extends Subscriber {
 
             Future<AgentsAvailableResult> agentsAvailableFuture = publish.sendEvent(new AgentsAvailableEvent(serials));
             if (agentsAvailableFuture == null || agentsAvailableFuture.get() == null) {
-                MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
                 return;
             }
@@ -54,8 +52,7 @@ public class M extends Subscriber {
             }
 
             Future<Pair<Boolean, Integer>> gadgetAvailableFuture = publish.sendEvent(new GadgetAvailableEvent(missionInfo.getGadget()));
-            if(gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null){
-                MessageBrokerImpl.getInstance().unregister(this);
+            if (gadgetAvailableFuture == null || gadgetAvailableFuture.get() == null) {
                 terminate();
                 return;
             }
@@ -72,7 +69,6 @@ public class M extends Subscriber {
 
             Future<Boolean> agentsSentFuture = publish.sendEvent(new SendAgentsEvent(serials, missionDuration));
             if (agentsSentFuture == null) {
-                MessageBrokerImpl.getInstance().unregister(this);
                 terminate();
                 return;
             }
@@ -106,7 +102,6 @@ public class M extends Subscriber {
 
     private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
-            MessageBrokerImpl.getInstance().unregister(this);
             terminate();
         });
     }

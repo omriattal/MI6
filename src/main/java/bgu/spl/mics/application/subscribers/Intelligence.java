@@ -37,14 +37,12 @@ public class Intelligence extends Subscriber {
 
     @Override
     protected void initialize() {
-        MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
     }
 
     private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
-            MessageBrokerImpl.getInstance().unregister(this);
             terminate();
         });
     }
@@ -56,6 +54,7 @@ public class Intelligence extends Subscriber {
             if (!missionInfoList.isEmpty()) {
                 MissionInfo missionInfo = missionInfoList.get(0);
                 if (currentTick == missionInfo.getTimeIssued()) {
+//                    System.out.println("-------------- intel " + serialNumber + " sending mission: " + missionInfo.getMissionName());TODO: delete
                     publisher.sendEvent(new MissionReceivedEvent<>(missionInfo));
                     missionInfoList.remove(missionInfo);
                 }

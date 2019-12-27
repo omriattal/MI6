@@ -1,6 +1,8 @@
 package bgu.spl.mics;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.*;
 
 /**
@@ -122,14 +124,15 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     private <T> void assignEventAndRequeueSubscriber(Event<T> e) throws InterruptedException {
-        Subscriber first = getTopicQueue(e.getClass()).poll();
-        getTopicQueue(e.getClass()).add(first);
+        Subscriber firstSub = getTopicQueue(e.getClass()).poll();
+        getTopicQueue(e.getClass()).add(firstSub);
 
-        addToSubQueue(e, first);
+        addToSubQueue(e, firstSub);
     }
 
     private void addToSubQueue(Message b, Subscriber subscriber) throws InterruptedException {
-        getSubQueue(subscriber).put(b);
+        BlockingQueue<Message> subQueue = getSubQueue(subscriber);
+        subQueue.put(b);
     }
 
     @Override
@@ -152,26 +155,34 @@ public class MessageBrokerImpl implements MessageBroker {
         subscriberMap.remove(m);
     }
 
-    private void completeAllEventsOfSubscriberAsNull(Subscriber m) {
-        for (Message message : getSubQueue(m)) {
+    private void completeAllEventsOfSubscriberAsNull(Subscriber sub) {
+        BlockingQueue<Message> subQueue = getSubQueue(sub);
+        for (Message message : subQueue) {
             if (message instanceof Event) {
                 complete((Event) message, null);
             }
         }
     }
 
-    private void removeFromTopicMap(Subscriber m) {
+    private void removeFromTopicMap(Subscriber m) throws InterruptedException {
+        Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair;
+        Semaphore topicSemaphore;
         for (Map.Entry<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> entry : topicMap.entrySet()) {
-            Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = entry.getValue();
-            topicPair.getSecond().remove(m);
+            topicPair = entry.getValue();
+            topicSemaphore = topicPair.getFirst();
+
+            topicSemaphore.acquire();
+            try {
+                topicPair.getSecond().remove(m);
+            } finally {
+                topicSemaphore.release();
+            }
         }
     }
 
     @Override
     public Message awaitMessage(Subscriber m) throws InterruptedException {
         if (!subscriberMap.containsKey(m)) {
-            System.out.println(m.toString());
-            System.out.println(subscriberMap.toString());
             throw new IllegalStateException("No such Subscriber registered: " + m.getName());
         }
 
@@ -184,5 +195,12 @@ public class MessageBrokerImpl implements MessageBroker {
 
     private static class Instance {
         private static MessageBroker instance = new MessageBrokerImpl();
+    }
+
+    //TODO: delete this
+    public void clear(){
+        subscriberMap.clear();
+        topicMap.clear();
+        eventMap.clear();
     }
 }

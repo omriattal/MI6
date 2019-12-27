@@ -33,29 +33,25 @@ public class Moneypenny extends Subscriber {
 
     @Override
     protected void initialize() {
-        MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
         if (serialNumber % 2 == 0) {
             subscribeToAgentsAvailableEvent();
             moneypennyCounter.incrementAndGet();
-        }
-        else {
+        } else {
             subscribeToReleasingEvents();
         }
     }
 
     private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
-            MessageBrokerImpl.getInstance().unregister(this);
             terminate();
             if (serialNumber % 2 == 0) {
                 moneypennyCounter.decrementAndGet();
                 synchronized (moneypennyCounter) {
                     moneypennyCounter.notifyAll();
                 }
-            }
-            else {
+            } else {
                 synchronized (moneypennyCounter) {
                     while (moneypennyCounter.get() > 0) {
                         releaseAllAgents();
@@ -67,7 +63,7 @@ public class Moneypenny extends Subscriber {
     }
 
     private void releaseAllAgents() {
-        if(agentsSerialsList == null) {
+        if (agentsSerialsList == null) {
             agentsSerialsList = new ArrayList<>();
             for (Map.Entry<String, Agent> agentEntry : squad.getAgentsMap().entrySet()) {
                 agentsSerialsList.add(agentEntry.getKey());
@@ -83,10 +79,12 @@ public class Moneypenny extends Subscriber {
 
     private void subscribeToAgentsAvailableEvent() {
         subscribeEvent(AgentsAvailableEvent.class, (event) -> {
-            List<String> agentsToCheck = event.getSerials();
-            List<String> agentNames = squad.getAgentsNames(agentsToCheck);
-            boolean result = squad.getAgents(agentsToCheck);
-            synchronized (moneypennyCounter){
+            List<String> agentsToGet = event.getSerials();
+//            System.out.println("@@@@@ MP @@@@@ moneypenny: " + serialNumber + " getting agents " + agentsToGet); //TODO: delete
+            List<String> agentNames = squad.getAgentsNames(agentsToGet);
+//            System.out.println("@@@@@ MP @@@@@ moneypenny: " + serialNumber + " got agents " + agentsToGet); //TODO: delete
+            boolean result = squad.getAgents(agentsToGet);
+            synchronized (moneypennyCounter) {
                 moneypennyCounter.notifyAll();
             }
             complete(event, new AgentsAvailableResult(serialNumber, result, agentNames));

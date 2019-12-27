@@ -87,4 +87,10 @@ public class Diary {
     private static class Instance {
         private static Diary instance = new Diary();
     }
+
+    //TODO: consider deleting this
+    public void clear(){
+        reports.clear();
+        total.compareAndSet(total.get(), 0);
+    }
 }
