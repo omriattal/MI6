@@ -30,6 +30,10 @@ public class TimeService extends Publisher {
     }
 
     @Override
+    /**
+     * Sents a time-tick in every 100 milliseconds.
+     * when {@code currentTick > totalTicks} - sents {@code FinalTickBroadcast} to every {@code Subscribers}
+     */
     public void run() {
         SimplePublisher publisher = getSimplePublisher();
         while (currentTick <= totalTicks) {

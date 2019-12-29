@@ -24,7 +24,7 @@ public class Moneypenny extends Subscriber {
     private int currentTick;
     /**
      * @Brief A private field that counts the number of moneypennys with an even {@code serialNumber}.
-     * If the counter
+     * If the counter is > 0 then all "Releasing" Events moneypennys are restricted from terminating.
      */
     private static final AtomicInteger moneypennyCounter = new AtomicInteger(0);
 
@@ -77,6 +77,9 @@ public class Moneypenny extends Subscriber {
         });
     }
 
+    /**
+     * Releases all {@code Agents} from the {@code Squad}.
+     */
     private void releaseAllAgents() {
         if (agentsSerialsList == null) {
             agentsSerialsList = new ArrayList<>();
@@ -87,6 +90,9 @@ public class Moneypenny extends Subscriber {
         squad.releaseAgents(agentsSerialsList);
     }
 
+    /**
+     * Subscribes itself to the {@code SendAgentsEvent and ReleaseAgentEvents}
+     */
     private void subscribeToReleasingEvents() {
         subscribeToSendAgentsEvent();
         subscribeToReleaseAgentsEvent();
@@ -103,6 +109,7 @@ public class Moneypenny extends Subscriber {
             complete(event, new AgentsAvailableResult(serialNumber, result, agentNames));
         });
     }
+
 
     private void subscribeToReleaseAgentsEvent() {
         subscribeEvent(ReleaseAgentsEvent.class, (event) -> {
