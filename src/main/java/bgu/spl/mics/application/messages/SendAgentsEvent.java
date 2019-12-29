@@ -4,6 +4,9 @@ import bgu.spl.mics.Event;
 
 import java.util.List;
 
+/**
+ * A command from M to Moneypenny to send given agents.
+ */
 public class SendAgentsEvent implements Event<Boolean> {
     private List<String> serials;
     private int duration;
