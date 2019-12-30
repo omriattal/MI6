@@ -110,7 +110,6 @@ public class Moneypenny extends Subscriber {
         });
     }
 
-
     private void subscribeToReleaseAgentsEvent() {
         subscribeEvent(ReleaseAgentsEvent.class, (event) -> {
             List<String> serials = event.getSerials();

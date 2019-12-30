@@ -60,11 +60,14 @@ public class Intelligence extends Subscriber {
         SimplePublisher publisher = getSimplePublisher();
         subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
             setCurrentTick(broadcast.getTimeTick());
-            if (!missionInfoList.isEmpty()) {
+            while (!missionInfoList.isEmpty()) {
                 MissionInfo missionInfo = missionInfoList.get(0);
                 if (currentTick == missionInfo.getTimeIssued()) {
                     publisher.sendEvent(new MissionReceivedEvent<>(missionInfo));
                     missionInfoList.remove(missionInfo);
+                }
+                else {
+                    break;
                 }
             }
         });

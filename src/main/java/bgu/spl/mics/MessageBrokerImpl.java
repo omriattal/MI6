@@ -210,7 +210,7 @@ public class MessageBrokerImpl implements MessageBroker {
     }
 
     /**
-     * Iterates over the {@link topicMap} Removes given {@link Subscriber} from all the topics it's subscribed to.
+     * Iterates over the {@code topicMap} Removes given {@link Subscriber} from all the topics it's subscribed to.
      *
      * @param sub the subscriber to remove.
      * @throws InterruptedException
@@ -257,4 +257,9 @@ public class MessageBrokerImpl implements MessageBroker {
         private static MessageBroker instance = new MessageBrokerImpl();
     }
 
+    public void clear(){
+        eventMap.clear();
+        subscriberMap.clear();
+        topicMap.clear();
+    }
 }

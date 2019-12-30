@@ -94,4 +94,5 @@ public interface MessageBroker {
      */
     Message awaitMessage(Subscriber s) throws InterruptedException;
 
+    void clear();
 }

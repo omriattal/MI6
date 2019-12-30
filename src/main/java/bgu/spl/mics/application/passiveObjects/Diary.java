@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -81,6 +82,14 @@ public class Diary {
             oldTotal = total.get();
             newTotal = oldTotal + 1;
         } while (!total.compareAndSet(oldTotal, newTotal));
+    }
+
+    public void clear() {
+        reports.clear();
+    }
+
+    public List<Report> getReports() { //TODO: delete this after tests.
+        return  reports;
     }
 
     /**
