@@ -29,9 +29,6 @@ public class Future<T> {
      * <p>
      *
      * @return return the result of type T if it is available, if not wait until it is available.
-     * <p>
-     * @pre: none
-     * @post: isDone()
      */
     public synchronized T get() {
         while (!isDone()) {
@@ -45,10 +42,6 @@ public class Future<T> {
 
     /**
      * Resolves the result of this Future object.
-     * <p>
-     *
-     * @pre: result != null
-     * @post: isDone() = true
      */
     public synchronized void resolve(T result) {
         this.result = result;
@@ -74,9 +67,6 @@ public class Future<T> {
      * @return return the result of type T if it is available, if not,
      * wait for {@code timeout} TimeUnits {@code unit}. If time has
      * elapsed, return null.
-     * <p>
-     * @pre: {@param timeout >= 0} && {@param unit.instanceOf TimeUnit}
-     * @post: isDone() ? timeout not passed : timeout passed
      */
     public synchronized T get(long timeout, TimeUnit unit) {
         if (!isDone) {

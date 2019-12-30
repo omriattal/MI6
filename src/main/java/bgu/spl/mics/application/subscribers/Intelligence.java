@@ -1,6 +1,5 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.MessageBrokerImpl;
 import bgu.spl.mics.SimplePublisher;
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.FinalTickBroadcast;
@@ -45,9 +44,7 @@ public class Intelligence extends Subscriber {
     }
 
     private void subscribeToFinalTickBroadcast() {
-        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
-            terminate();
-        });
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> terminate());
     }
 
     /**
@@ -63,7 +60,6 @@ public class Intelligence extends Subscriber {
             while (!missionInfoList.isEmpty()) {
                 MissionInfo missionInfo = missionInfoList.get(0);
                 if (currentTick == missionInfo.getTimeIssued()) {
-//                    System.out.println("-------------- intel " + serialNumber + " sending mission: " + missionInfo.getMissionName());TODO: delete
                     publisher.sendEvent(new MissionReceivedEvent<>(missionInfo));
                     missionInfoList.remove(missionInfo);
                 }

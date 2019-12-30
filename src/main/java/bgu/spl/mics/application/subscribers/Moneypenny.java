@@ -1,9 +1,10 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.MessageBrokerImpl;
 import bgu.spl.mics.Subscriber;
 import bgu.spl.mics.application.messages.*;
-import bgu.spl.mics.application.passiveObjects.*;
+import bgu.spl.mics.application.passiveObjects.Agent;
+import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
+import bgu.spl.mics.application.passiveObjects.Squad;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ public class Moneypenny extends Subscriber {
     private List<String> agentsSerialsList;
     private int currentTick;
     /**
-     * @Brief A private field that counts the number of moneypennys with an even {@code serialNumber}.
+     * A private field that counts the number of moneypennys with an even {@code serialNumber}.
      * If the counter is > 0 then all "Releasing" Events moneypennys are restricted from terminating.
      */
     private static final AtomicInteger moneypennyCounter = new AtomicInteger(0);
@@ -35,12 +36,12 @@ public class Moneypenny extends Subscriber {
         currentTick = 0;
     }
 
-    @Override
     /**
      * Subscribes itself to the {@code timeTickBroadcast and FinalTickBroadcast}.
      * If the {@code serialNumber} is even - subscribes itself only to {@code AgentAvailableEvent}.
      * If not - subscribes itself to {@code SendAgentsEvent and ReleaseAgentEvent}.
      */
+    @Override
     protected void initialize() {
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
@@ -127,9 +128,7 @@ public class Moneypenny extends Subscriber {
     }
 
     private void subscribeToTimeTick() {
-        subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
-            setCurrentTick(broadcast.getTimeTick());
-        });
+        subscribeBroadcast(TickBroadcast.class, (broadcast) -> setCurrentTick(broadcast.getTimeTick()));
     }
 
     private void setCurrentTick(int timeTick) {

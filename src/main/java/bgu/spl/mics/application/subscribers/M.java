@@ -99,23 +99,20 @@ public class M extends Subscriber {
             }
             //adds report to the Diary.
             addReportToDiary(missionInfo, serials, agentsAvailableFuture, qResult);
-
-            //mark mission as complete.
-            complete(event, true);
         });
     }
 
     /**
      * Adds the completed mission as a {@code Report} to the {@code Diary}.
-     * @param missionInfo - info about the mission.
-     * @param serials - the serials of the agent sent to the mission.
+     *
+     * @param missionInfo           - info about the mission.
+     * @param serials               - the serials of the agent sent to the mission.
      * @param agentsAvailableFuture - An object which contains a {@code List of AgentNames}, the {@code serial of Moneypenny}
      *                              and the result - true or false.
-     * @param qResult - {@code Pair} of the {@code timeTick } which {@Code Q} got the {@code GadgetAvailableEvent} and
-     *      *                              a {@code Future} which contains true.
-     * @throws InterruptedException
+     * @param qResult               - {@code Pair} of the {@code timeTick} which {@link Q} got the {@code GadgetAvailableEvent} and
+     *                              a {@code Future} which contains true.
      */
-    private void addReportToDiary(MissionInfo missionInfo, List<String> serials, Future<AgentsAvailableResult> agentsAvailableFuture, Pair<Boolean, Integer> qResult) throws InterruptedException {
+    private void addReportToDiary(MissionInfo missionInfo, List<String> serials, Future<AgentsAvailableResult> agentsAvailableFuture, Pair<Boolean, Integer> qResult) {
         Report missionReport = new Report();
         AgentsAvailableResult agentsAvailableResult = agentsAvailableFuture.get();
         missionReport.setAgentsNames(agentsAvailableResult.getAgentNames());
@@ -132,15 +129,11 @@ public class M extends Subscriber {
     }
 
     private void subscribeToTimeTick() {
-        subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
-            setCurrentTick(broadcast.getTimeTick());
-        });
+        subscribeBroadcast(TickBroadcast.class, (broadcast) -> setCurrentTick(broadcast.getTimeTick()));
     }
 
     private void subscribeToFinalTickBroadcast() {
-        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
-            terminate();
-        });
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> terminate());
     }
 
     private void setCurrentTick(int timeTick) {
