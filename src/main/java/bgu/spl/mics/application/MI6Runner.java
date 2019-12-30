@@ -35,6 +35,7 @@ public class MI6Runner {
                 newThread.start();
             }
 
+            //We wait for all the threads to finish initializing before we continue to the TimeService.
             latch.await();
 
             TimeService timeService = inputParser.getTimeService();
@@ -49,6 +50,12 @@ public class MI6Runner {
         }
     }
 
+    /**
+     * Iterates over given threads list and joins each one.
+     *
+     * @param threadsList th threads to join.
+     * @throws InterruptedException
+     */
     private static void joinOtherRunningThreads(List<Thread> threadsList) throws InterruptedException {
         for (Thread thread : threadsList) {
             thread.join();

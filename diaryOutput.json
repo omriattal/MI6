@@ -1,22 +1,8 @@
 {
   "reports": [
     {
-      "name": "Land of Riches",
+      "missionName": "Thunderball",
       "m": 0,
-      "moneypenny": 0,
-      "agentsSerialNumbers": [
-        "007"
-      ],
-      "agentsNames": [
-        "James Bond"
-      ],
-      "timeCreated": 2,
-      "timeIssued": 2,
-      "qTime": 2
-    },
-    {
-      "name": "Thunderball",
-      "m": 1,
       "moneypenny": 0,
       "agentsSerialNumbers": [
         "007"
@@ -26,8 +12,22 @@
       ],
       "timeCreated": 3,
       "timeIssued": 3,
-      "qTime": 5
+      "qTime": 3
+    },
+    {
+      "missionName": "From Russia With Love",
+      "m": 0,
+      "moneypenny": 0,
+      "agentsSerialNumbers": [
+        "007"
+      ],
+      "agentsNames": [
+        "James Bond"
+      ],
+      "timeCreated": 3,
+      "timeIssued": 3,
+      "qTime": 7
     }
   ],
-  "total": 4
+  "total": 2
 }

@@ -94,6 +94,5 @@ public interface MessageBroker {
      */
     Message awaitMessage(Subscriber s) throws InterruptedException;
 
-    //TODO: definitely delete this
     void clear();
 }

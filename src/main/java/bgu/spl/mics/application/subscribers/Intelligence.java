@@ -31,6 +31,9 @@ public class Intelligence extends Subscriber {
         sortMissions();
     }
 
+    /**
+     * Sorts the {@code missionInfoList} by the {@code timeIssued}.
+     */
     private void sortMissions() {
         missionInfoList.sort(Comparator.comparingInt(MissionInfo::getTimeIssued));
     }
@@ -47,16 +50,25 @@ public class Intelligence extends Subscriber {
         });
     }
 
+    /**
+     * Subscribes itself to the {@code TimeTickBroadcast}.
+     * Updates the {@code currentTick} and acts as follows:
+     * If the {@code missionInfoList} is not empty - checks if {@code currentTick} equals to a timeIssued of the first mission.
+     * If it does - sends a new {@code MissionReceivedEvent} to the {@code MessageBroker} and removes the mission from the list.
+     */
     private void subscribeToTimeTick() {
         SimplePublisher publisher = getSimplePublisher();
         subscribeBroadcast(TickBroadcast.class, (broadcast) -> {
             setCurrentTick(broadcast.getTimeTick());
-            if (!missionInfoList.isEmpty()) {
+            while (!missionInfoList.isEmpty()) {
                 MissionInfo missionInfo = missionInfoList.get(0);
                 if (currentTick == missionInfo.getTimeIssued()) {
 //                    System.out.println("-------------- intel " + serialNumber + " sending mission: " + missionInfo.getMissionName());TODO: delete
                     publisher.sendEvent(new MissionReceivedEvent<>(missionInfo));
                     missionInfoList.remove(missionInfo);
+                }
+                else {
+                    break;
                 }
             }
         });

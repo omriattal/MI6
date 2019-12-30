@@ -11,6 +11,9 @@ import java.util.*;
 public class Squad {
     private Map<String, Agent> agents;
 
+    /**
+     * Private constructor as this is a thread safe singleton.
+     */
     private Squad() {
         agents = new HashMap<>();
     }
@@ -117,6 +120,9 @@ public class Squad {
         return agents;
     }
 
+    /**
+     * A class holding the single instance of {@link Squad}.
+     */
     private static class Instance {
         private static Squad instance = new Squad();
     }

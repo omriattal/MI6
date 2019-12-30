@@ -22,6 +22,10 @@ public class Moneypenny extends Subscriber {
     private Squad squad;
     private List<String> agentsSerialsList;
     private int currentTick;
+    /**
+     * @Brief A private field that counts the number of moneypennys with an even {@code serialNumber}.
+     * If the counter is > 0 then all "Releasing" Events moneypennys are restricted from terminating.
+     */
     private static final AtomicInteger moneypennyCounter = new AtomicInteger(0);
 
     public Moneypenny(int serialNumber) {
@@ -32,6 +36,11 @@ public class Moneypenny extends Subscriber {
     }
 
     @Override
+    /**
+     * Subscribes itself to the {@code timeTickBroadcast and FinalTickBroadcast}.
+     * If the {@code serialNumber} is even - subscribes itself only to {@code AgentAvailableEvent}.
+     * If not - subscribes itself to {@code SendAgentsEvent and ReleaseAgentEvent}.
+     */
     protected void initialize() {
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
@@ -43,6 +52,12 @@ public class Moneypenny extends Subscriber {
         }
     }
 
+    /**
+     * Subscribes itself to {@code FinalTickBroadcast}.
+     * if the {@code serialNumber} is even - decrements the {@code moneypennycounter} and notify other "releasing" {@code Moneypenny}.
+     * else - if the {@code moneypennycounter > 0} - means there are more "AgentAvailable" {@code Moneypennys}  releases all {@code agents}
+     * and waits.
+     */
     private void subscribeToFinalTickBroadcast() {
         subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
             terminate();
@@ -62,6 +77,9 @@ public class Moneypenny extends Subscriber {
         });
     }
 
+    /**
+     * Releases all {@code Agents} from the {@code Squad}.
+     */
     private void releaseAllAgents() {
         if (agentsSerialsList == null) {
             agentsSerialsList = new ArrayList<>();
@@ -72,6 +90,9 @@ public class Moneypenny extends Subscriber {
         squad.releaseAgents(agentsSerialsList);
     }
 
+    /**
+     * Subscribes itself to the {@code SendAgentsEvent and ReleaseAgentEvents}
+     */
     private void subscribeToReleasingEvents() {
         subscribeToSendAgentsEvent();
         subscribeToReleaseAgentsEvent();
@@ -80,9 +101,7 @@ public class Moneypenny extends Subscriber {
     private void subscribeToAgentsAvailableEvent() {
         subscribeEvent(AgentsAvailableEvent.class, (event) -> {
             List<String> agentsToGet = event.getSerials();
-//            System.out.println("@@@@@ MP @@@@@ moneypenny: " + serialNumber + " getting agents " + agentsToGet); //TODO: delete
             List<String> agentNames = squad.getAgentsNames(agentsToGet);
-//            System.out.println("@@@@@ MP @@@@@ moneypenny: " + serialNumber + " got agents " + agentsToGet); //TODO: delete
             boolean result = squad.getAgents(agentsToGet);
             synchronized (moneypennyCounter) {
                 moneypennyCounter.notifyAll();

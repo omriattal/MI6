@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -22,6 +23,9 @@ public class Diary {
     private List<Report> reports;
     private AtomicInteger total;
 
+    /**
+     * Private constructor as this is a thread safe singleton.
+     */
     private Diary() {
         reports = new ArrayList<>();
         total = new AtomicInteger(0);
@@ -32,10 +36,6 @@ public class Diary {
      */
     public static Diary getInstance() {
         return Instance.instance;
-    }
-
-    public List<Report> getReports() {
-        return reports;
     }
 
     /**
@@ -78,19 +78,26 @@ public class Diary {
     public void incrementTotal() {
         int oldTotal;
         int newTotal;
-        do{
+        do {
             oldTotal = total.get();
             newTotal = oldTotal + 1;
-        } while(!total.compareAndSet(oldTotal, newTotal));
+        } while (!total.compareAndSet(oldTotal, newTotal));
     }
 
+    public void clear() {
+        reports.clear();
+    }
+
+    public List<Report> getReports() { //TODO: delete this after tests.
+        return  reports;
+    }
+
+    /**
+     * A class holding the single instance of {@link Diary}.
+     */
     private static class Instance {
         private static Diary instance = new Diary();
     }
 
-    //TODO: consider deleting this
-    public void clear(){
-        reports.clear();
-        total.compareAndSet(total.get(), 0);
-    }
+
 }

@@ -1,8 +1,6 @@
 package bgu.spl.mics;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.*;
 
 /**
@@ -16,6 +14,9 @@ public class MessageBrokerImpl implements MessageBroker {
     private ConcurrentHashMap<Event, Future> eventMap;
     private Semaphore topicMapLock;
 
+    /**
+     * Constructor is private as this is a thread safe singleton.
+     */
     private MessageBrokerImpl() {
         subscriberMap = new ConcurrentHashMap<>();
         topicMap = new ConcurrentHashMap<>();
@@ -40,6 +41,14 @@ public class MessageBrokerImpl implements MessageBroker {
         subscribeTopic(type, m);
     }
 
+    /**
+     * Adds given subscriber to the subscriber list of given type of message. If there is no list assigned for the type
+     * yet then this method will add one for it.
+     *
+     * @param type the type of Message given, a class that extends Message.
+     * @param m    the subscriber to add to the type's list.
+     * @throws InterruptedException
+     */
     private void subscribeTopic(Class<? extends Message> type, Subscriber m) throws InterruptedException {
         topicMapLock.acquire();
         try {
@@ -59,11 +68,23 @@ public class MessageBrokerImpl implements MessageBroker {
         }
     }
 
+    /**
+     * Gets the subscriber list of given topic from the topic map.
+     *
+     * @param topic the class extending Message that is the topic.
+     * @return a {@link ConcurrentLinkedQueue<Subscriber>} that's the list of subscribers for the topic.
+     */
     private ConcurrentLinkedQueue<Subscriber> getTopicQueue(Class<? extends Message> topic) {
         Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(topic);
         return topicPair.getSecond();
     }
 
+    /**
+     * Get's the fair {@link Semaphore} of a given topic.
+     *
+     * @param topic the topic to get the {@link Semaphore} of
+     * @return a {@link Semaphore} that represents a fair lock for the given topic.
+     */
     private Semaphore getTopicQueueLock(Class<? extends Message> topic) {
         Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair = topicMap.get(topic);
         return topicPair.getFirst();
@@ -123,6 +144,14 @@ public class MessageBrokerImpl implements MessageBroker {
         }
     }
 
+    /**
+     * Assigns the event {@param e} to the first subscriber in it's subscriber queue, then requeue the subscriber to
+     * ensure the events are assigned in a round robin manner.
+     *
+     * @param e   the event to assign to the subscriber.
+     * @param <T> the type of given event.
+     * @throws InterruptedException
+     */
     private <T> void assignEventAndRequeueSubscriber(Event<T> e) throws InterruptedException {
         Subscriber firstSub = getTopicQueue(e.getClass()).poll();
         getTopicQueue(e.getClass()).add(firstSub);
@@ -130,9 +159,16 @@ public class MessageBrokerImpl implements MessageBroker {
         addToSubQueue(e, firstSub);
     }
 
-    private void addToSubQueue(Message b, Subscriber subscriber) throws InterruptedException {
+    /**
+     * Adds {@param message} the the Message queue of given subscriber, in the map.
+     *
+     * @param message    to add to the queue.
+     * @param subscriber to add the message to.
+     * @throws InterruptedException
+     */
+    private void addToSubQueue(Message message, Subscriber subscriber) throws InterruptedException {
         BlockingQueue<Message> subQueue = getSubQueue(subscriber);
-        subQueue.put(b);
+        subQueue.put(message);
     }
 
     @Override
@@ -143,6 +179,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
     @Override
     public void unregister(Subscriber m) throws InterruptedException {
+        //We acquire the topic map lock to make sure no event will be assigned while unregister happens.
         topicMapLock.acquire();
         try {
             if (subscriberMap.containsKey(m)) {
@@ -151,10 +188,18 @@ public class MessageBrokerImpl implements MessageBroker {
         } finally {
             topicMapLock.release();
         }
+        // We complete all the events as null to signal the publisher that the event will not be completed with wanted
+        // result.
         completeAllEventsOfSubscriberAsNull(m);
         subscriberMap.remove(m);
     }
 
+    /**
+     * Iterates over the message list of given {@link Subscriber} to complete all the futures assigned to its events
+     * as null.
+     *
+     * @param sub the {@link Subscriber} to do the action on.
+     */
     private void completeAllEventsOfSubscriberAsNull(Subscriber sub) {
         BlockingQueue<Message> subQueue = getSubQueue(sub);
         for (Message message : subQueue) {
@@ -164,7 +209,13 @@ public class MessageBrokerImpl implements MessageBroker {
         }
     }
 
-    private void removeFromTopicMap(Subscriber m) throws InterruptedException {
+    /**
+     * Iterates over the {@code topicMap} Removes given {@link Subscriber} from all the topics it's subscribed to.
+     *
+     * @param sub the subscriber to remove.
+     * @throws InterruptedException
+     */
+    private void removeFromTopicMap(Subscriber sub) throws InterruptedException {
         Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>> topicPair;
         Semaphore topicSemaphore;
         for (Map.Entry<Class<? extends Message>, Pair<Semaphore, ConcurrentLinkedQueue<Subscriber>>> entry : topicMap.entrySet()) {
@@ -173,7 +224,7 @@ public class MessageBrokerImpl implements MessageBroker {
 
             topicSemaphore.acquire();
             try {
-                topicPair.getSecond().remove(m);
+                topicPair.getSecond().remove(sub);
             } finally {
                 topicSemaphore.release();
             }
@@ -189,18 +240,26 @@ public class MessageBrokerImpl implements MessageBroker {
         return getSubQueue(m).take();
     }
 
-    private BlockingQueue<Message> getSubQueue(Subscriber m) {
-        return subscriberMap.get(m);
+    /**
+     * Gets the {@link Message} queue of given subscriber.
+     *
+     * @param sub the given sub.
+     * @return the queue of given sub.
+     */
+    private BlockingQueue<Message> getSubQueue(Subscriber sub) {
+        return subscriberMap.get(sub);
     }
 
+    /**
+     * The class holding the single instance of the thread safe singleton.
+     */
     private static class Instance {
         private static MessageBroker instance = new MessageBrokerImpl();
     }
 
-    //TODO: delete this
     public void clear(){
+        eventMap.clear();
         subscriberMap.clear();
         topicMap.clear();
-        eventMap.clear();
     }
 }
