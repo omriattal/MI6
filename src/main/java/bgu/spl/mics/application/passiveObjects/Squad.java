@@ -108,7 +108,9 @@ public class Squad {
     public List<String> getAgentsNames(List<String> serials) {
         List<String> names = new ArrayList<>();
         for (String serial : serials) {
-            names.add(agents.get(serial).getName());
+            Agent agent = agents.get(serial);
+            if (agent != null)
+                names.add(agent.getName());
         }
         return names;
     }

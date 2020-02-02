@@ -9,6 +9,7 @@ import bgu.spl.mics.application.publishers.TimeService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * This is the Main class of the application. You should parse the input file,
