@@ -17,6 +17,8 @@ import java.util.concurrent.CountDownLatch;
  * In the end, you should output serialized objects.
  */
 public class MI6Runner {
+    public static CountDownLatch latch = null;
+
     public static void main(String[] args) {
         try {
             AppInputJsonParser inputParser = new AppInputJsonParser(args[0]);
@@ -25,6 +27,7 @@ public class MI6Runner {
             List<Subscriber> subscribers = inputParser.getSubscribers();
             List<Thread> threadsList = new ArrayList<>();
 
+            latch = new CountDownLatch(subscribers.size());
             Thread newThread;
             for (Subscriber subscriber : subscribers) {
                 newThread = new Thread(subscriber);
@@ -32,9 +35,8 @@ public class MI6Runner {
                 newThread.start();
             }
 
-            //Sleep to give time for all the threads to finish
-            // their init before we start the time service
-            Thread.sleep(100);
+            //We wait for all the threads to finish initializing before we continue to the TimeService.
+            latch.await();
 
             TimeService timeService = inputParser.getTimeService();
             Thread timeServiceThread = new Thread(timeService);
@@ -48,6 +50,12 @@ public class MI6Runner {
         }
     }
 
+    /**
+     * Iterates over given threads list and joins each one.
+     *
+     * @param threadsList th threads to join.
+     * @throws InterruptedException
+     */
     private static void joinOtherRunningThreads(List<Thread> threadsList) throws InterruptedException {
         for (Thread thread : threadsList) {
             thread.join();

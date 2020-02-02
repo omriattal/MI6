@@ -1,12 +1,11 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.MessageBrokerImpl;
 import bgu.spl.mics.Pair;
 import bgu.spl.mics.Subscriber;
+import bgu.spl.mics.application.messages.FinalTickBroadcast;
 import bgu.spl.mics.application.messages.GadgetAvailableEvent;
 import bgu.spl.mics.application.messages.TickBroadcast;
 import bgu.spl.mics.application.passiveObjects.Inventory;
-import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
 /**
  * Q is the only Subscriber\Publisher that has access to the {@link bgu.spl.mics.application.passiveObjects.Inventory}.
@@ -15,7 +14,6 @@ import bgu.spl.mics.application.messages.FinalTickBroadcast;
  * You MAY change constructor signatures and even add new public constructors.
  */
 public class Q extends Subscriber {
-    private static Q instance = null;
     private int currentTick;
 
     public Q() {
@@ -26,32 +24,30 @@ public class Q extends Subscriber {
 
     @Override
     protected void initialize() {
-        MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
         subscribeToGadgetAvailableEvent();
     }
 
     private void subscribeToFinalTickBroadcast() {
-        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
-            MessageBrokerImpl.getInstance().unregister(this);
-            terminate();
-        });
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> terminate());
     }
 
     private void subscribeToTimeTick() {
-        subscribeBroadcast(TickBroadcast.class, (broadcast)->{
-            setCurrentTick(broadcast.getTimeTick());
-        });
+        subscribeBroadcast(TickBroadcast.class, (broadcast)-> setCurrentTick(broadcast.getTimeTick()));
     }
 
     private void setCurrentTick(int currentTick) {
         this.currentTick = currentTick;
     }
 
+    /**
+     * Subscribes itself to the {@code GadgetAvailableEvent}.
+     * Checks the availability of the {@code gadget} in the {@code Inventory}.
+     */
     private void subscribeToGadgetAvailableEvent() {
         subscribeEvent(GadgetAvailableEvent.class, (event) -> {
-            boolean answer = Inventory.getInstance().getItem(event.getGadget()); //checks availability of the gadget.
+            boolean answer = Inventory.getInstance().getItem(event.getGadget());
             Pair<Boolean, Integer> result = new Pair<>(answer, currentTick);
             complete(event, result);
         });

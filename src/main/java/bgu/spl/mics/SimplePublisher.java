@@ -22,16 +22,15 @@ public final class SimplePublisher {
      *            {@code e}
      * @param e   The event to send
      * @return {@link Future<T>} object that may be resolved later by a different
-     *                           subscriber processing this event.
-     *                           null in case no Subscriber has subscribed to {@code e.getClass()}.
+     * subscriber processing this event.
+     * null in case no Subscriber has subscribed to {@code e.getClass()}.
      */
     public final <T> Future<T> sendEvent(Event<T> e) {
         try {
             return messageBroker.sendEvent(e);
-        } catch (InterruptedException ex) {
-            System.out.println("Thread was interrupted while sending an event");
-            return null;
+        } catch (InterruptedException ignored) {
         }
+        return null;
     }
 
     /**
@@ -44,8 +43,7 @@ public final class SimplePublisher {
     public final void sendBroadcast(Broadcast b) {
         try {
             messageBroker.sendBroadcast(b);
-        } catch (InterruptedException e){
-            System.out.println("Thread was interrupted while sending a broadcast");
+        } catch (InterruptedException ignored) {
         }
     }
 }

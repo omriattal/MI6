@@ -1,11 +1,7 @@
 package bgu.spl.mics.application.passiveObjects;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -48,13 +44,10 @@ public class Inventory {
      *
      * @param inventory Data structure containing all data necessary for initialization
      *                  of the inventory.
-     *                  <p>
-     * @pre: forall 0<=i<{@param inventory.length} inventory[i] != "" && inventory[i] != null
-     * @post: if pre conditions were met forall 0<=i<={@param inventory.length}
      */
     public void load(String[] inventory) {
         for (String gadget : inventory) {
-            if (gadget == null || gadget == "") {
+            if (gadget == null || gadget.equals("")) {
                 gadgets.clear();
                 return;
             }
@@ -68,9 +61,6 @@ public class Inventory {
      *
      * @param gadget Name of the gadget to check if available
      * @return ‘false’ if the gadget is missing, and ‘true’ otherwise
-     * <p>
-     * @pre: @param gadget != null && @param gadget != ""
-     * @post: @ret == gadgets.contains(gadget) && gadgets.remove(gadget) == false
      */
     public boolean getItem(String gadget) {
         return gadgets.remove(gadget);
@@ -81,7 +71,7 @@ public class Inventory {
      * Prints to a file name @filename a serialized object List<Gadget> which is a
      * List of all the reports in the diary.
      * This method is called by the main method in order to generate the output.
-     * <p>
+     * </p>
      */
     public void printToFile(String filename) {
         JsonArray gadgetsJson = new JsonArray();

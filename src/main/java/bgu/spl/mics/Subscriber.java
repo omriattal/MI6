@@ -1,5 +1,7 @@
 package bgu.spl.mics;
 
+import bgu.spl.mics.application.MI6Runner;
+
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Thread.interrupted;
@@ -121,14 +123,20 @@ public abstract class Subscriber extends RunnableSubPub {
      */
     @Override
     public final void run() {
+        messageBroker.register(this);
         initialize();
-        while (!terminated) {
+        MI6Runner.latch.countDown();
+        while (!interrupted() && !terminated) {
             try {
                 Message message = messageBroker.awaitMessage(this);
                 Callback callback = callbackMap.get(message.getClass());
                 callback.call(message);
-            } catch (InterruptedException ignored){
+            } catch (InterruptedException ignored) {
             }
+        }
+        try {
+            messageBroker.unregister(this);
+        } catch (InterruptedException ignored) {
         }
     }
 

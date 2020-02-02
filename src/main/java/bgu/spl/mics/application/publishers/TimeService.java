@@ -29,13 +29,16 @@ public class TimeService extends Publisher {
     protected void initialize() {
     }
 
+    /**
+     * Sends a time-tick in every 100 milliseconds.
+     * when {@code currentTick > totalTicks} - sents {@code FinalTickBroadcast} to every {@code Subscribers}
+     */
     @Override
     public void run() {
         SimplePublisher publisher = getSimplePublisher();
-        while (currentTick < totalTicks) {
-            // System.out.println("Time Tick: " + currentTick + " will be sent sent"); TODO: clean this
-            publisher.sendBroadcast(new TickBroadcast(currentTick));
+        while (currentTick <= totalTicks) {
             try {
+                publisher.sendBroadcast(new TickBroadcast(currentTick));
                 Thread.sleep(100);
             } catch (InterruptedException ignored) {
             }
@@ -43,5 +46,4 @@ public class TimeService extends Publisher {
         }
         publisher.sendBroadcast(new FinalTickBroadcast());
     }
-
 }

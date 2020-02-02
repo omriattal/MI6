@@ -12,6 +12,9 @@ public class Squad {
 
     private Map<String, Agent> agents;
 
+    /**
+     * Private constructor as this is a thread safe singleton.
+     */
     private Squad() {
         agents = new HashMap<>();
     }
@@ -67,8 +70,9 @@ public class Squad {
         try {
             Thread.sleep(time * 100);
         } catch (InterruptedException ignored) {
+        } finally {
+            releaseAgents(serials);
         }
-        releaseAgents(serials);
     }
 
     /**
@@ -87,11 +91,11 @@ public class Squad {
                 return false;
             }
             synchronized (agent) {
-                try {
-                    while (!agent.isAvailable()) {
+                while (!agent.isAvailable()) {
+                    try {
                         agent.wait();
+                    } catch (InterruptedException ignored) {
                     }
-                } catch (InterruptedException ignored) {
                 }
                 agent.acquire();
             }
@@ -115,6 +119,13 @@ public class Squad {
         return names;
     }
 
+    public Map<String, Agent> getAgentsMap() {
+        return agents;
+    }
+
+    /**
+     * A class holding the single instance of {@link Squad}.
+     */
     private static class Instance {
         private static Squad instance = new Squad();
     }

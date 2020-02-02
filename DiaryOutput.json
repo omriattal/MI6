@@ -1,0 +1,21 @@
+{
+  "reports": [
+    {
+      "missionName": "Thunderball",
+      "m": 2,
+      "moneypenny": 0,
+      "agentsSerialNumbers": [
+        "006",
+        "007"
+      ],
+      "agentsNames": [
+        "Alec Trevelyan",
+        "James Bond"
+      ],
+      "timeCreated": 3,
+      "timeIssued": 3,
+      "qTime": 3
+    }
+  ],
+  "total": 3
+}

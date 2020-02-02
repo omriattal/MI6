@@ -35,7 +35,7 @@
             "gadget": "Dagger shoe",
             "name": "From Russia With Love",
             "timeExpired": 8,
-            "timeIssued": 6
+            "timeIssued": 3
           },
           {
             "serialAgentsNumbers": [
@@ -45,7 +45,7 @@
             "gadget": "Dagger shoe",
             "name": "From Russia With Love",
             "timeExpired": 100,
-            "timeIssued": 15
+            "timeIssued": 3
           },
           {
             "serialAgentsNumbers": [
@@ -55,7 +55,7 @@
             "gadget": "X-ray glasses",
             "name": "The World Is Not Enough",
             "timeExpired": 100,
-            "timeIssued": 16
+            "timeIssued": 3
           },
           {
             "serialAgentsNumbers": [

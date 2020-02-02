@@ -93,5 +93,4 @@ public interface MessageBroker {
      *                              to became available.
      */
     Message awaitMessage(Subscriber s) throws InterruptedException;
-    
 }

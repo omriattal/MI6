@@ -3,19 +3,31 @@
     {
       "missionName": "Thunderball",
       "m": 0,
-      "moneypenny": 2,
+      "moneypenny": 0,
       "agentsSerialNumbers": [
-        "006",
         "007"
       ],
       "agentsNames": [
-        "Alec Trevelyan",
         "James Bond"
       ],
       "timeCreated": 3,
       "timeIssued": 3,
       "qTime": 3
+    },
+    {
+      "missionName": "From Russia With Love",
+      "m": 0,
+      "moneypenny": 0,
+      "agentsSerialNumbers": [
+        "007"
+      ],
+      "agentsNames": [
+        "James Bond"
+      ],
+      "timeCreated": 3,
+      "timeIssued": 3,
+      "qTime": 7
     }
   ],
-  "total": 3
+  "total": 2
 }

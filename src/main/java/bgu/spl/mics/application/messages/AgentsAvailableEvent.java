@@ -5,6 +5,9 @@ import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 
 import java.util.List;
 
+/**
+ * An event sent by M to check if given agents are available.
+ */
 public class AgentsAvailableEvent implements Event<AgentsAvailableResult> {
     List<String> serials;
 

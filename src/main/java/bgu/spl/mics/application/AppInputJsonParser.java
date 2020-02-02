@@ -13,8 +13,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,14 +26,13 @@ public class AppInputJsonParser {
     TimeService timeService;
 
     AppInputJsonParser(String filePath) {
-        try {
-            JsonObject inputJsonObject = JsonParser.parseReader(new FileReader(filePath)).getAsJsonObject();
+        try (Reader reader = new FileReader(filePath)) {
+            JsonObject inputJsonObject = JsonParser.parseReader(reader).getAsJsonObject();
             gadgets = createGadgetsArray(inputJsonObject);
             agents = createAgentsArray(inputJsonObject);
             subscribers = createSubscribersList(inputJsonObject);
             timeService = createTimeService(inputJsonObject);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException ignored) {
         }
     }
 

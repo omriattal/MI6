@@ -1,17 +1,15 @@
 package bgu.spl.mics.application.subscribers;
 
-import bgu.spl.mics.MessageBrokerImpl;
 import bgu.spl.mics.Subscriber;
-import bgu.spl.mics.application.messages.AgentsAvailableEvent;
-import bgu.spl.mics.application.messages.ReleaseAgentsEvent;
-import bgu.spl.mics.application.messages.SendAgentsEvent;
-import bgu.spl.mics.application.messages.TickBroadcast;
+import bgu.spl.mics.application.messages.*;
+import bgu.spl.mics.application.passiveObjects.Agent;
 import bgu.spl.mics.application.passiveObjects.AgentsAvailableResult;
 import bgu.spl.mics.application.passiveObjects.Squad;
-import bgu.spl.mics.application.messages.FinalTickBroadcast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Only this type of Subscriber can access the squad.
@@ -23,38 +21,79 @@ import java.util.List;
 public class Moneypenny extends Subscriber {
     int serialNumber;
     private Squad squad;
+    private List<String> agentsSerialsList;
     private int currentTick;
-    private List<String> agentAcquiredSerials;
+    /**
+     * A private field that counts the number of moneypennys with an even {@code serialNumber}.
+     * If the counter is > 0 then all "Releasing" Events moneypennys are restricted from terminating.
+     */
+    private static final AtomicInteger moneypennyCounter = new AtomicInteger(0);
 
     public Moneypenny(int serialNumber) {
         super("Moneypenny");
         this.serialNumber = serialNumber;
         squad = Squad.getInstance();
         currentTick = 0;
-        agentAcquiredSerials = new ArrayList<>();
     }
 
+    /**
+     * Subscribes itself to the {@code timeTickBroadcast and FinalTickBroadcast}.
+     * If the {@code serialNumber} is even - subscribes itself only to {@code AgentAvailableEvent}.
+     * If not - subscribes itself to {@code SendAgentsEvent and ReleaseAgentEvent}.
+     */
     @Override
     protected void initialize() {
-        MessageBrokerImpl.getInstance().register(this);
         subscribeToTimeTick();
         subscribeToFinalTickBroadcast();
         if (serialNumber % 2 == 0) {
             subscribeToAgentsAvailableEvent();
-        }
-        else {
+            moneypennyCounter.incrementAndGet();
+        } else {
             subscribeToReleasingEvents();
         }
     }
 
+    /**
+     * Subscribes itself to {@code FinalTickBroadcast}.
+     * if the {@code serialNumber} is even - decrements the {@code moneypennycounter} and notify other "releasing" {@code Moneypenny}.
+     * else - if the {@code moneypennycounter > 0} - means there are more "AgentAvailable" {@code Moneypennys}  releases all {@code agents}
+     * and waits.
+     */
     private void subscribeToFinalTickBroadcast() {
-        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) ->{
-            squad.releaseAgents(agentAcquiredSerials);
-            MessageBrokerImpl.getInstance().unregister(this);
+        subscribeBroadcast(FinalTickBroadcast.class, (FinalTickBroadcast) -> {
             terminate();
+            if (serialNumber % 2 == 0) {
+                moneypennyCounter.decrementAndGet();
+                synchronized (moneypennyCounter) {
+                    moneypennyCounter.notifyAll();
+                }
+            } else {
+                synchronized (moneypennyCounter) {
+                    while (moneypennyCounter.get() > 0) {
+                        releaseAllAgents();
+                        moneypennyCounter.wait();
+                    }
+                }
+            }
         });
     }
 
+    /**
+     * Releases all {@code Agents} from the {@code Squad}.
+     */
+    private void releaseAllAgents() {
+        if (agentsSerialsList == null) {
+            agentsSerialsList = new ArrayList<>();
+            for (Map.Entry<String, Agent> agentEntry : squad.getAgentsMap().entrySet()) {
+                agentsSerialsList.add(agentEntry.getKey());
+            }
+        }
+        squad.releaseAgents(agentsSerialsList);
+    }
+
+    /**
+     * Subscribes itself to the {@code SendAgentsEvent and ReleaseAgentEvents}
+     */
     private void subscribeToReleasingEvents() {
         subscribeToSendAgentsEvent();
         subscribeToReleaseAgentsEvent();
@@ -62,11 +101,13 @@ public class Moneypenny extends Subscriber {
 
     private void subscribeToAgentsAvailableEvent() {
         subscribeEvent(AgentsAvailableEvent.class, (event) -> {
-            List<String> agentsToCheck = event.getSerials();
-            List<String> agentNames = squad.getAgentsNames(agentsToCheck);
-            boolean result = squad.getAgents(agentsToCheck);
-            agentAcquiredSerials.addAll(event.getSerials());
-            complete(event,new AgentsAvailableResult(serialNumber,result,agentNames));
+            List<String> agentsToGet = event.getSerials();
+            List<String> agentNames = squad.getAgentsNames(agentsToGet);
+            boolean result = squad.getAgents(agentsToGet);
+            synchronized (moneypennyCounter) {
+                moneypennyCounter.notifyAll();
+            }
+            complete(event, new AgentsAvailableResult(serialNumber, result, agentNames));
         });
     }
 
@@ -87,9 +128,7 @@ public class Moneypenny extends Subscriber {
     }
 
     private void subscribeToTimeTick() {
-        subscribeBroadcast(TickBroadcast.class, (broadcast)->{
-            setCurrentTick(broadcast.getTimeTick());
-        });
+        subscribeBroadcast(TickBroadcast.class, (broadcast) -> setCurrentTick(broadcast.getTimeTick()));
     }
 
     private void setCurrentTick(int timeTick) {
